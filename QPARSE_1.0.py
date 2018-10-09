@@ -220,7 +220,7 @@ def island_scan(seq, base, min_len, max_gaps_len, max_gaps):
 	return list_island
 #end def island_scan
 
-def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode):
+def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode, normal_mode):
 	''' '''
 	list_island, end_i, name_i, counter = [], 0, 1, 0
 	for i, base_i in enumerate(seq):
@@ -233,23 +233,25 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 						graph_island = graph_build_island_length(list_island, max_loop)
 						sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
 						sys.stderr.flush()
-						if faster_mode or length > 12:
-							search_length = 4
-							# Calculate min_perfect #
-							if min_perfect:
-								min_perfect_per_four_islands = min_perfect / (length / 4)
-								search_min_perfect = 4 if min_perfect_per_four_islands > 4 else min_perfect_per_four_islands
+						if is_path(graph_island, list_island, length):
+							if (faster_mode or length > 12) and not (normal_mode):
+								search_length = 4
+								# Calculate min_perfect #
+								if min_perfect:
+									min_perfect_per_four_islands = min_perfect / (length / 4)
+									search_min_perfect = 4 if min_perfect_per_four_islands > 4 else min_perfect_per_four_islands
+								else:
+									search_min_perfect = min_perfect
+								#end if
 							else:
+								search_length = length
 								search_min_perfect = min_perfect
 							#end if
-						else:
-							search_length = length
-							search_min_perfect = min_perfect
-						#end if
-						if not all_flag:
-							print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
-						else:
-							print_paths(graph_island, list_island, seq, of, search_length)
+							if not all_flag:
+								print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
+							else:
+								print_paths(graph_island, list_island, seq, of, search_length)
+							#end if
 						#end if
 					#end if
 					# Reset variables #
@@ -268,23 +270,25 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 		graph_island = graph_build_island_length(list_island, max_loop)
 		sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
 		sys.stderr.flush()
-		if faster_mode or length > 12:
-			search_length = 4
-			# Calculate min_perfect #
-			if min_perfect:
-				min_perfect_per_four_islands = min_perfect / (length / 4)
-				search_min_perfect = 4 if min_perfect_per_four_islands > 4 else min_perfect_per_four_islands
+		if is_path(graph_island, list_island, length):
+			if (faster_mode or length > 12) and not (normal_mode):
+				search_length = 4
+				# Calculate min_perfect #
+				if min_perfect:
+					min_perfect_per_four_islands = min_perfect / (length / 4)
+					search_min_perfect = 4 if min_perfect_per_four_islands > 4 else min_perfect_per_four_islands
+				else:
+					search_min_perfect = min_perfect
+				#end if
 			else:
+				search_length = length
 				search_min_perfect = min_perfect
 			#end if
-		else:
-			search_length = length
-			search_min_perfect = min_perfect
-		#end if
-		if not all_flag:
-			print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
-		else:
-			print_paths(graph_island, list_island, seq, of, search_length)
+			if not all_flag:
+				print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
+			else:
+				print_paths(graph_island, list_island, seq, of, search_length)
+			#end if
 		#end if
 	#end if
 #end def island_scan_range_run
@@ -394,7 +398,7 @@ def graph_build_island_length(list_island, max_loop):
 #### Paths search ####
 def print_paths(link_graph, list_island, seq, of, length=4):
 	''' write all the possible quadruplex long length 
-	recorded in the link_graph to the output file of'''
+	recorded in the link_graph to the output file of '''
 	for island in list_island:
 		for quadruplex_as_list_island in link_graph.get_paths(island, length):
 			print_quadruplex(quadruplex_as_list_island, seq, of)
@@ -402,9 +406,26 @@ def print_paths(link_graph, list_island, seq, of, length=4):
 	#end for
 #end def print_paths
 
+def is_path(link_graph, list_island, length=4):
+	''' check if there is a path long length in the graph '''
+	list_island_len = len(list_island)
+	for i, island in enumerate(list_island):
+		sys.stderr.write('\r\t-> Check longest path [{:.0f}%]'.format(float(i)/list_island_len*100))
+		sys.stderr.flush()
+		if link_graph.path_check(island, length):
+			sys.stderr.write('\r\t-> Check longest path [{0}%] - [OK]\n'.format(100))
+			sys.stderr.flush()
+			return True
+		#end if
+	#end for
+	sys.stderr.write('\r\t-> Check longest path [{0}%] - [NOT FOUND]\n'.format(100))
+	sys.stderr.flush()
+	return False
+#end def is_path
+
 def print_paths_score(link_graph, list_island, seq, of, length=4, min_perfect=1):
 	''' write all the best non contained quadruplex long length for each index 
-	recorded in the link_graph to the output file of'''
+	recorded in the link_graph to the output file of '''
 	last_name, last_score, printed, last_end_idx, end_idx_block = '', 0, False, 0, 0
 	list_island_len = len(list_island)
 	#print [(island.get_island(seq), island.get_strt_idx()) for island in list_island]
@@ -518,14 +539,14 @@ def main(args): # use as args['name']
 		min_perfect = 0
 	else:
 		if args['perfect'] and int(args['perfect']) > island_num:
-			sys.exit('input error: perfect islands required are higher than the number of islands required')
+			sys.exit('\ninput error: perfect islands required are higher than the number of islands required\n')
 		#end if
 		min_perfect = int(args['perfect']) if args['perfect'] else 1
 	#end if
 	# Check faster mode #
 	if args['fastermode']:
 		if island_num <= 4:
-			sys.exit('input error: faster mode can be only applied to the search of more than four islands')
+			sys.exit('\ninput error: faster mode can be only applied to the search of more than four islands\n')
 		#end if
 	#end if
 
@@ -548,9 +569,9 @@ def main(args): # use as args['name']
 
 				# Analyzing the sequence #
 				if not checked_min_bases:
-					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'])
+					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
 				else:
-					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'])
+					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
 				#end if
 
 				# Reset Variables #
@@ -578,9 +599,9 @@ def main(args): # use as args['name']
 	fo.write('>{0}\n'.format(header))
 
 	if not checked_min_bases:
-		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'])
+		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
 	else:
-		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'])
+		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
 	#end if
 
 
@@ -600,16 +621,19 @@ if __name__ == '__main__':
 	parser.add_argument('-m','--minlen', help='minimum islands length [2]', required=False)
 	parser.add_argument('-M','--maxlen', help='maximum islands length [2]', required=False)
 	parser.add_argument('-L','--maxloop', help='maximum loops length [12]', required=False)
-	parser.add_argument('-g','--gapnum', help='maximum gaps number [0]', required=False)
-	parser.add_argument('-l','--gaplen', help='maximum gaps length [0]', required=False)
+	parser.add_argument('-g','--gapnum', help='maximum number of gaps per island [0]', required=False)
+	parser.add_argument('-l','--gaplen', help='maximum length of gaps per island [0]', required=False)
 	parser.add_argument('-b','--base', help='base to use for search [G]', required=False)
-	parser.add_argument('-n','--islandnum', help='islands number [4]', required=False)
-	parser.add_argument('-p','--perfect', help='minimum number of perfects islands required [1]', required=False)
-	parser.add_argument('-all','--allresult', help='show all results for each island, also overlapping and suboptimal', action='store_true', required=False)
-	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two continuous bases', action='store_true', required=False)
+	parser.add_argument('-n','--islandnum', help='number of consecutive islands [4]', required=False)
+	parser.add_argument('-p','--perfect', help='minimum number of perfect islands (no-gaps) required [1]', required=False)
+	parser.add_argument('-all','--allresult', help='show all possible patterns, also overlapping and suboptimal\n[caution: the output can be huge]', action='store_true', required=False)
+	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two consecutive bases (e.g. GaGcG)', action='store_true', required=False)
 	parser.add_argument('-noperfect','--noperfect', help='detect also patterns without any perfect island', action='store_true', required=False)
 	parser.add_argument('-fast','--fastermode', 
 						help='faster search mode that can be applied for islandnum > 4\n[only regions with more than --islandnum islands are evaluated\nto build the graph, however, the graph is navigated\nsearching for patterns of four islands to reduce the\ncombinatorial complexity and speed up the analysis]', 
+						action='store_true', required=False)
+	parser.add_argument('-normal','--normalmode', 
+						help='searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
 						action='store_true', required=False)
 
 	args = vars(parser.parse_args())
