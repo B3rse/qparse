@@ -452,8 +452,8 @@ def print_paths_score(link_graph, list_island, seq, of, length=4, min_perfect=1)
 					if end_idx > end_idx_block:
 						end_idx_block = end_idx
 					#end if
-#					if (end_idx > last_end_idx) or (score >= last_score):
-					if (end_idx > last_end_idx) or (score > last_score):
+					if (end_idx > last_end_idx) or (score >= last_score):
+#					if (end_idx > last_end_idx) or (score > last_score):
 						print_quadruplex_score(quadruplex_as_list_island, seq, of, score)
 						printed = True
 					#end if
