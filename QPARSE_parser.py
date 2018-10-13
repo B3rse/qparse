@@ -58,17 +58,17 @@ def merge(fi, fo, gff):
 	for line in fi:
 		if not line.startswith('#'):
 			if line.startswith('>'):
-				first = True
 				if first_ID:
 					first_ID = False
 				else:
-					if gff:
+					if gff and not first:
 						routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i)
-					else:
+					elif not first:
 						routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i)
 					#end if
 				#end if
 				seqID = line.rstrip()[1:]
+				first = True
 			else:
 				line_splitted = line.rstrip().split()
 				g4ID, start, end, island_len = line_splitted[0], int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
@@ -97,9 +97,9 @@ def merge(fi, fo, gff):
 			#end if
 		#end if
 	#end for
-	if gff:
+	if gff and not first:
 		routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i)
-	else:
+	elif not first:
 		routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i)
 	#end if
 #end def merge
@@ -113,19 +113,19 @@ def max_number(fi, fo, gff):
 	for line in fi:
 		if not line.startswith('#'):
 			if line.startswith('>'):
-				first = True
 				if first_ID:
 					first_ID = False
 				else:
-					if gff and not printed:
+					if gff and not printed and not first:
 						routine_print_gff(fo, seqID, seq_i, start_i, end_i, island_len_i, score_i)
 						printed = True
-					elif not printed:
+					elif not printed and not first:
 						routine_print_tsv(fo, seqID, seq_i, start_i, end_i, island_len_i, score_i)
 						printed = True
 					#end if
 				#end if
 				seqID = line.rstrip()[1:]
+				first, printed = True, True
 			else:
 				line_splitted = line.rstrip().split()
 				g4ID, start, end, island_len, score = line_splitted[0], int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4]), int(line_splitted[1])
@@ -153,10 +153,10 @@ def max_number(fi, fo, gff):
 			#end if
 		#end if
 	#end for
-	if gff and not printed:
+	if gff and not printed and not first:
 		routine_print_gff(fo, seqID, seq_i, start_i, end_i, island_len_i, score_i)
 		printed = True
-	elif not printed:
+	elif not printed and not first:
 		routine_print_tsv(fo, seqID, seq_i, start_i, end_i, island_len_i, score_i)
 		printed = True
 	#end if
@@ -164,6 +164,9 @@ def max_number(fi, fo, gff):
 
 def normal(fi, fo, gff):
 	''' '''
+	if not gff:
+		fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\n')
+	#end if
 	for line in fi:
 		if not line.startswith('#'):
 			if line.startswith('>'):
