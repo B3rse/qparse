@@ -7,7 +7,9 @@
 #		The tool is flexible and allows to perform an exhaustive search of all the possible 
 #		quadruplexes forming patterns of the desired base in the sequence. 
 #		Alternatively, patterns containing any number of islands can be detected.
-#		It can also detect degenerated patterns containing imperfect island.
+#		It can also detect degenerate patterns containing imperfect islands,
+#		and evaluate the symmetrical properties of the linking loops to detect longer loops
+#		that can form hairpin structures.
 #
 #	Author: Michele Berselli
 #		University of Padova
@@ -37,6 +39,7 @@
 
 import sys, argparse
 from a_graph import graph
+import numpy as np
 
 
 ########################################
@@ -220,7 +223,7 @@ def island_scan(seq, base, min_len, max_gaps_len, max_gaps):
 	return list_island
 #end def island_scan
 
-def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode, normal_mode):
+def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode, normal_mode, symmetry, degenerancy):
 	''' '''
 	list_island, end_i, name_i, counter = [], 0, 1, 0
 	for i, base_i in enumerate(seq):
@@ -248,9 +251,9 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 								search_min_perfect = min_perfect
 							#end if
 							if not all_flag:
-								print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
+								print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, search_length, search_min_perfect)
 							else:
-								print_paths(graph_island, list_island, seq, of, search_length)
+								print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, search_length)
 							#end if
 						#end if
 					#end if
@@ -285,9 +288,9 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 				search_min_perfect = min_perfect
 			#end if
 			if not all_flag:
-				print_paths_score(graph_island, list_island, seq, of, search_length, search_min_perfect)
+				print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, search_length, search_min_perfect)
 			else:
-				print_paths(graph_island, list_island, seq, of, search_length)
+				print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, search_length)
 			#end if
 		#end if
 	#end if
@@ -396,12 +399,16 @@ def graph_build_island_length(list_island, max_loop):
 #end def graph_build_island_length
 
 #### Paths search ####
-def print_paths(link_graph, list_island, seq, of, length=4):
+def print_paths(link_graph, list_island, seq, of, symmetry, degenerancy, length=4):
 	''' write all the possible quadruplex long length 
 	recorded in the link_graph to the output file of '''
 	for island in list_island:
 		for quadruplex_as_list_island in link_graph.get_paths(island, length):
-			print_quadruplex(quadruplex_as_list_island, seq, of)
+			if symmetry:
+				print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy)
+			else:
+				print_quadruplex(quadruplex_as_list_island, seq, of)
+			#end if
 		#end for
 	#end for
 #end def print_paths
@@ -423,7 +430,7 @@ def is_path(link_graph, list_island, length=4):
 	return False
 #end def is_path
 
-def print_paths_score(link_graph, list_island, seq, of, length=4, min_perfect=1):
+def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, length=4, min_perfect=1):
 	''' write all the best non contained quadruplex long length for each index 
 	recorded in the link_graph to the output file of '''
 	last_name, last_score, printed, last_end_idx, end_idx_block = '', 0, False, 0, 0
@@ -454,7 +461,11 @@ def print_paths_score(link_graph, list_island, seq, of, length=4, min_perfect=1)
 					#end if
 					if (end_idx > last_end_idx) or (score >= last_score):
 #					if (end_idx > last_end_idx) or (score > last_score):
-						print_quadruplex_score(quadruplex_as_list_island, seq, of, score)
+						if symmetry:
+							print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy)
+						else:
+							print_quadruplex_score(quadruplex_as_list_island, seq, of, score)
+						#end if
 						printed = True
 					#end if
 				else:
@@ -497,6 +508,58 @@ def print_quadruplex(quadruplex_as_list_island, seq, of):
 	of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score_total, start_idx, end_idx, island.get_G_num()))
 #end def print_quadruplex
 
+def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy):
+	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
+	#Print quadruplex
+	list_alignments = []
+	score_total, idx = quadruplex_as_list_island[0].get_score(), quadruplex_as_list_island[0].get_end_idx() + 1
+	of.write(quadruplex_as_list_island[0].get_island(seq)) #writing first island
+	of.write('-')
+	for island in quadruplex_as_list_island[1:-1]: #looping other island
+		sequence = seq[idx:island.get_strt_idx()].lower()
+		of.write(sequence)
+		#Check symmetry and adding score
+#		check_aln, max_score, alignment, errors = check_symmetry(sequence, symmetry, degenerancy)
+		if sequence:
+			max_score, alignment = check_symmetry(sequence, symmetry, degenerancy)
+		else:
+			max_score, alignment = 0, ''
+		#end if
+		score_total += max_score
+		if alignment:
+			list_alignments.append(alignment)
+		else:
+			list_alignments.append('NA')
+		#end if
+		of.write('-')
+		of.write(island.get_island(seq))
+		of.write('-')
+		score_total += island.get_score()
+		idx = island.get_end_idx() + 1
+	#end for
+	sequence = seq[idx:quadruplex_as_list_island[-1].get_strt_idx()].lower()
+	of.write(sequence)
+	#Check symmetry and adding score
+#	check_aln, max_score, alignment, errors = check_symmetry(sequence, symmetry, degenerancy)
+	if sequence:
+		max_score, alignment = check_symmetry(sequence, symmetry, degenerancy)
+	else:
+		max_score, alignment = 0, ''
+	#end if
+	score_total += max_score
+	if alignment:
+		list_alignments.append(alignment)
+	else:
+		list_alignments.append('NA')
+	#end if
+	of.write('-')
+	of.write(quadruplex_as_list_island[-1].get_island(seq)) #writing last island
+	score_total += quadruplex_as_list_island[-1].get_score()
+	#Print other information
+	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
+	of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score_total, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+#end def print_quadruplex_symmetry
+
 def print_quadruplex_score(quadruplex_as_list_island, seq, of, score):
 	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
 	#Print quadruplex
@@ -518,6 +581,138 @@ def print_quadruplex_score(quadruplex_as_list_island, seq, of, score):
 	of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score, start_idx, end_idx, island.get_G_num()))
 #end def print_quadruplex_score
 
+def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy):
+	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
+	#Print quadruplex
+	list_alignments = []
+	idx = quadruplex_as_list_island[0].get_end_idx() + 1
+	of.write(quadruplex_as_list_island[0].get_island(seq)) #writing first island
+	of.write('-')
+	for island in quadruplex_as_list_island[1:-1]: #looping other island
+		sequence = seq[idx:island.get_strt_idx()].lower()
+		of.write(sequence)
+		#Check symmetry and adding score
+#		check_aln, max_score, alignment, errors = check_symmetry(sequence, symmetry, degenerancy)
+		if sequence:
+			max_score, alignment = check_symmetry(sequence, symmetry, degenerancy)
+		else:
+			max_score, alignment = 0, ''
+		#end if
+		score += max_score
+		if alignment:
+			list_alignments.append(alignment)
+		else:
+			list_alignments.append('NA')
+		#end if
+		of.write('-')
+		of.write(island.get_island(seq))
+		of.write('-')
+		idx = island.get_end_idx() + 1
+	#end for
+	sequence = seq[idx:quadruplex_as_list_island[-1].get_strt_idx()].lower()
+	of.write(sequence)
+	#Check symmetry and adding score
+#	check_aln, max_score, alignment, errors = check_symmetry(sequence, symmetry, degenerancy)
+	if sequence:
+		max_score, alignment = check_symmetry(sequence, symmetry, degenerancy)
+	else:
+		max_score, alignment = 0, ''
+	#end if
+	score += max_score
+	if alignment:
+		list_alignments.append(alignment)
+	else:
+		list_alignments.append('NA')
+	#end if
+	of.write('-')
+	of.write(quadruplex_as_list_island[-1].get_island(seq)) #writing last island
+	#Print other information
+	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
+	of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+#end def print_quadruplex_score_symmetry
+
+#### Alignment ####
+def check_symmetry(sequence, symmetry, degenerancy):
+	''' modified Needleman-Wunsch algorithm '''
+	k, indls, match = len(sequence), -1, 1
+#	max_errors = k * degenerancy // 100
+	mm_counter, gaps_counter = 0, 0
+	max_i, max_j, max_score = 0, 0, 0
+	seq, alignment = sequence.upper(), ''
+	score_matrix = np.zeros(shape=(k + 1, k + 1), dtype=np.int)
+	subst_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+	if symmetry == 'mirror':
+		subst_matrix = np.matrix([[1, -1, -1, -1], [-1, 1, -1, -1], [-1, -1, 1, -1], [-1, -1, -1, 1]])
+	elif symmetry == 'palindrome':
+		subst_matrix = np.matrix([[-1, -1, -1, 1], [-1, -1, 1, -1], [-1, 1, -1, -1], [1, -1, -1, -1]])
+	else: #mixed
+		subst_matrix = np.matrix([[1, -1, -1, 1], [-1, 1, 1, -1], [-1, 1, 1, -1], [1, -1, -1, 1]])
+	#end if
+	#Initialize score_matrix
+	for i in range(k + 1):
+		score_matrix[0, i] = i * indls
+		score_matrix[i, 0] = i * indls
+	#end for
+	#Compute matrix
+	max_score_def = False
+	for i in range(1, k + 1):
+		for j in range(1, k + 1):
+			if (i + j) > k:
+				break
+			#end if
+			score_up = score_matrix[i - 1, j] + indls
+			score_left = score_matrix[i, j - 1] + indls
+			score_diag = score_matrix[i - 1, j - 1] + subst_matrix[subst_idx[seq[i - 1]], subst_idx[seq[k - j]]]
+			score_matrix[i, j] = max(score_up, score_left, score_diag)
+			#Track highest score
+			if k == (i + j): #along the diagonal
+				if not max_score_def:
+					max_score, max_i, max_j = score_matrix[i, j], i, j
+					max_score_def = True
+				elif max_score < score_matrix[i, j]:
+					max_score, max_i, max_j = score_matrix[i, j], i, j
+				#end if
+			#end if
+		#end for
+	#end for
+#	#Check if alignment have been found
+#	if max_score < (max(max_i, max_j) - (max_errors * 2)):
+#		return False, max_score, None, None
+#	#end if
+	#Traceback
+	i, j = max_i, max_j
+	while (i > 0) or (j > 0):
+		if (i > 0) and (j > 0):
+			score_comparison = subst_matrix[subst_idx[seq[i - 1]], subst_idx[seq[k - j]]]
+		#end if
+		if (i > 0) and (j > 0) and (score_matrix[i, j] == score_matrix[i - 1, j - 1] + score_comparison):
+			if not match == score_comparison: #mismatch
+				mm_counter += 1
+				alignment += 'm'
+			else:
+				alignment += 'M'
+			#end if
+			i -= 1
+			j -= 1
+		elif (i > 0) and (score_matrix[i, j] == score_matrix[i - 1, j] + indls):
+			gaps_counter += 1
+			alignment += 'u'
+			i -= 1
+		else:
+			gaps_counter += 1
+			alignment += 'l'
+			j -= 1
+		#end if
+	#end while
+#	#Results
+#	errors = mm_counter + gaps_counter
+#	if errors > max_errors:
+#		return False, max_score, None, None
+#	else:
+#		return True, max_score, alignment, errors
+#	#end if
+	return max_score, alignment
+#end def check_symmetry
 
 ########################################
 ####		MAIN                    ####
@@ -549,6 +744,20 @@ def main(args): # use as args['name']
 			sys.exit('\ninput error: faster mode can be only applied to the search of more than four islands\n')
 		#end if
 	#end if
+	# Check symmetry mode #
+	if (args['simmetrymirror'] and args['simmetrypalindrome']) or (args['simmetrymirror'] and args['simmetrymixed']) or (args['simmetrypalindrome'] and args['simmetrymixed']):
+		sys.exit('\ninput error: multiple simmetry modes selected, please select only one at the time\n')
+	elif args['simmetrymirror'] or args['simmetrypalindrome'] or args['simmetrymixed']:
+		if args['simmetrymirror']:
+			symmetry, degenerancy = 'mirror', 100
+		elif args['simmetrypalindrome']:
+			symmetry, degenerancy = 'palindrome', 100
+		else:
+			symmetry, degenerancy = 'mixed', 100
+		#end if
+	else:
+		symmetry, degenerancy = False, 0
+	#end if
 
 	## Opening output file ##
 	fo = open(args['output'], 'w')
@@ -569,9 +778,13 @@ def main(args): # use as args['name']
 
 				# Analyzing the sequence #
 				if not checked_min_bases:
-					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
+					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+										args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
+										symmetry, degenerancy)
 				else:
-					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
+					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+										args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
+										symmetry, degenerancy)
 				#end if
 
 				# Reset Variables #
@@ -599,11 +812,14 @@ def main(args): # use as args['name']
 	fo.write('>{0}\n'.format(header))
 
 	if not checked_min_bases:
-		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
+		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+							args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
+							symmetry, degenerancy)
 	else:
-		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'])
+		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+							args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
+							symmetry, degenerancy)
 	#end if
-
 
 	## Closing output file ##
 	fo.close()
@@ -634,6 +850,15 @@ if __name__ == '__main__':
 						action='store_true', required=False)
 	parser.add_argument('-normal','--normalmode', 
 						help='searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
+						action='store_true', required=False)
+	parser.add_argument('-sM','--simmetrymirror', 
+						help='evaluate the symmetry and length of the loops to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]', 
+						action='store_true', required=False)
+	parser.add_argument('-sP','--simmetrypalindrome', 
+						help='evaluate the symmetry and length of the loops to improve the score,\nPALINDROMIC symmetry is considered\n[allows to detect longer loops with palindromic properties that can form canonical-hairpins]', 
+						action='store_true', required=False)
+	parser.add_argument('-sX','--simmetrymixed', 
+						help='evaluate the symmetry and length of the loops to improve the score,\nMIXED MIRROR-PALINDROMIC symmetry is considered\n[allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins]', 
 						action='store_true', required=False)
 
 	args = vars(parser.parse_args())
