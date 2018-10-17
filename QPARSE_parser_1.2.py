@@ -184,6 +184,102 @@ def normal(fi, fo, gff):
 	#end for
 #end def normal
 
+def score(fi, fo, alignment):
+	''' '''
+	dict_quadruplex, dict_quadruplex_aln = {}, {}
+	c = 0
+	for line in fi:
+		if not line.startswith('#'):
+			if line.startswith('>'):
+				c += 1
+				seqID = line.rstrip().split()[0][1:]
+			else:
+				line_splitted = line.rstrip().split()
+				if len(line_splitted) == 6 and alignment:
+					seq, score, start, end, island_len, aln = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4]), line_splitted[5]
+					dict_quadruplex_aln.setdefault((seqID, c), {})
+					dict_quadruplex_aln[(seqID, c)].setdefault((seq, start), [score, end, island_len, aln])
+				else:
+					seq, score, start, end, island_len = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
+					dict_quadruplex.setdefault((seqID, c), {})
+					dict_quadruplex[(seqID, c)].setdefault((seq, start), [score, end, island_len])
+				#end if
+			#end if
+		#end if
+	#end for
+
+	if dict_quadruplex:
+		for (seqID, c), dict_seqID in sorted(dict_quadruplex.iteritems(), key=lambda (x, y): x[1]):
+			for (seq, start), (score, end, island_len) in sorted(dict_seqID.iteritems(), key=lambda (x, y): y[0], reverse = True):
+				routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
+			#end for
+		#end for
+	else:
+		for (seqID, c), dict_seqID in sorted(dict_quadruplex_aln.iteritems(), key=lambda (x, y): x[1]):
+			for (seq, start), (score, end, island_len, aln) in sorted(dict_seqID.iteritems(), key=lambda (x, y): y[0], reverse = True):
+				routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
+				_, loop_1, _, loop_2, _, loop_3, _ = seq.split('-')
+				aln_1, aln_2, aln_3 = aln.split(';')
+				if aln_1:
+					fo.write('\tLoop_1:\n')
+					routine_print_align(fo, loop_1, aln_1[::-1])
+				#end if
+				if aln_2:
+					fo.write('\tLoop_2:\n')
+					routine_print_align(fo, loop_2, aln_2[::-1])
+				#end if
+				if aln_3:
+					fo.write('\tLoop_3:\n')
+					routine_print_align(fo, loop_3, aln_3[::-1])
+				#end if
+			#end for
+		#end for
+	#end if
+#end def score
+
+def routine_print_align(of, seq, align):
+
+	seq_len = len(seq)
+	# Write first sequence
+	of.write('\t\t')
+	i = 0
+	for l in align:
+		if l == 'W' or l == 'm' or l == 'H' or l == 'u':
+			of.write('{0}'.format(seq[i]))
+			i += 1
+		else:
+			of.write('-')
+		#end if
+	#end for
+	of.write('\n')
+
+	# Write align
+	of.write('\t\t')
+	for l in align:
+		if l == 'W':
+			of.write('|')
+		elif l == 'H':
+			of.write(':')
+		else:
+			of.write(' ')
+		#end if
+	#end for
+	of.write('\n')
+
+	# Write second sequence
+	of.write('\t\t')
+	i = 0
+	for l in align:
+		if l == 'W' or l == 'm' or l == 'H' or l == 'l':
+			of.write('{0}'.format(seq[seq_len - i - 1]))
+			i += 1
+		else:
+			of.write('-')
+		#end if
+	#end for
+	of.write('\n')
+#end def routine_print_align
+
 
 # Main
 def main(args):
@@ -192,8 +288,16 @@ def main(args):
 	fi = open(args['inputfile'], 'r')
 	fo = open(args['outputfile'], 'w')
 
+	if args['alignment']:
+		if args['gff'] or args['merge'] or args['max']:
+			sys.exit('\ninput error: alignment mode is incompatible with other parsing modes, please select only one\n')
+		#end if
+	#end if
+
 	## Parser
-	if args['merge']:
+	if args['alignment'] or args['score']:
+		score(fi, fo, args['alignment'])
+	elif args['merge']:
 		merge(fi, fo, args['gff'])
 	elif args['max']:
 		max_number(fi, fo, args['gff'])
@@ -209,14 +313,16 @@ def main(args):
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser(description='Script to format the output from QPARSE')
+	parser = argparse.ArgumentParser(description='Script to format the output from QPARSE', 
+									formatter_class=argparse.RawTextHelpFormatter)
 
 	parser.add_argument('-i','--inputfile', help='output file from QPARSE as input', required=True)
 	parser.add_argument('-o','--outputfile', help='file to store formatted output', required=True)
 	parser.add_argument('-g','--gff', help='output to gff format inseatd of tsv', action='store_true', required=False)
 	parser.add_argument('-m','--merge', help='merge overlapping solutions', action='store_true', required=False)
 	parser.add_argument('-x','--max', help='return the maximum number of non overlapping solutions', action='store_true', required=False)
-	parser.add_argument('-a','--alignment', help='return the alignment calculated for the linking loops', action='store_true', required=False)
+	parser.add_argument('-s','--score', help='order results by score', action='store_true', required=False)
+	parser.add_argument('-a','--alignment', help='order results by score,\nreturn the optimal alignment calculated for the linking loops', action='store_true', required=False)
 
 	args = vars(parser.parse_args())
 
