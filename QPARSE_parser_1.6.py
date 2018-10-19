@@ -162,7 +162,7 @@ def max_number(fi, fo, gff):
 	#end if
 #end def max
 
-def normal(fi, fo, gff):
+def normal(fi, fo, gff, maxLoop):
 	''' '''
 	if not gff:
 		fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\n')
@@ -174,9 +174,13 @@ def normal(fi, fo, gff):
 			else:
 				line_splitted = line.rstrip().split()
 				seq, score, start, end, island_len = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
-				if gff:
+				printa = True
+				if maxLoop:
+					printa = check_maxLoop(seq, maxLoop)
+				#end if
+				if gff and printa:
 					routine_print_gff(fo, seqID, seq, start, end, island_len, score)
-				else:
+				elif printa:
 					routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
 				#end if
 			#end if
@@ -184,8 +188,9 @@ def normal(fi, fo, gff):
 	#end for
 #end def normal
 
-def score(fi, fo, alignment):
+def score(fi, fo, alignment, maxLoop):
 	''' '''
+	fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\n')
 	dict_quadruplex, dict_quadruplex_aln = {}, {}
 	c = 0
 	for line in fi:
@@ -195,14 +200,27 @@ def score(fi, fo, alignment):
 				seqID = line.rstrip().split()[0][1:]
 			else:
 				line_splitted = line.rstrip().split()
+				printa = True
 				if len(line_splitted) == 6 and alignment:
 					seq, score, start, end, island_len, aln = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4]), line_splitted[5]
-					dict_quadruplex_aln.setdefault((seqID, c), {})
-					dict_quadruplex_aln[(seqID, c)].setdefault((seq, start), [score, end, island_len, aln])
+					if maxLoop:
+						printa = check_maxLoop(seq, maxLoop)
+					#end if
+					if printa:
+						dict_quadruplex_aln.setdefault((seqID, c), {})
+						dict_quadruplex_aln[(seqID, c)].setdefault((seq, start), [score, end, island_len, aln])
+					#end if
+				elif len(line_splitted) < 6 and alignment:
+					sys.exit('\nruntime error: input file was generated without checking for loop symmetry\n')
 				else:
 					seq, score, start, end, island_len = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
-					dict_quadruplex.setdefault((seqID, c), {})
-					dict_quadruplex[(seqID, c)].setdefault((seq, start), [score, end, island_len])
+					if maxLoop:
+						printa = check_maxLoop(seq, maxLoop)
+					#end if
+					if printa:
+						dict_quadruplex.setdefault((seqID, c), {})
+						dict_quadruplex[(seqID, c)].setdefault((seq, start), [score, end, island_len])
+					#end if
 				#end if
 			#end if
 		#end if
@@ -275,6 +293,22 @@ def routine_print_align(of, seq, align):
 	of.write('\n')
 #end def routine_print_align
 
+def check_maxLoop(seq, maxLoop):
+	''' '''
+	lista_loop = seq.split('-') #[_, loop1, _, loop2, _, ...]
+	Loop_counter = 0
+	for i, s_i in enumerate(lista_loop):
+		if (i % 2) == 1:
+			if len(s_i) > 5:
+				Loop_counter += 1
+			#end if
+			if Loop_counter > maxLoop:
+				return False
+			#end if
+		#end if
+	#end for
+	return True
+#end def check_maxLoop
 
 # Main
 def main(args):
@@ -288,16 +322,22 @@ def main(args):
 			sys.exit('\ninput error: alignment mode is incompatible with other parsing modes, please select only one\n')
 		#end if
 	#end if
+	
+	if args['maxLoop']:
+		maxLoop = int(args['maxLoop'])
+	else:
+		maxLoop = 0
+	#end if
 
 	## Parser
 	if args['alignment'] or args['score']:
-		score(fi, fo, args['alignment'])
+		score(fi, fo, args['alignment'], maxLoop)
 	elif args['merge']:
 		merge(fi, fo, args['gff'])
 	elif args['max']:
 		max_number(fi, fo, args['gff'])
 	else:
-		normal(fi, fo, args['gff'])
+		normal(fi, fo, args['gff'], maxLoop)
 	#end if
 
 	## Closing output file
@@ -318,6 +358,7 @@ if __name__ == '__main__':
 	parser.add_argument('-x','--max', help='return the maximum number of non overlapping solutions', action='store_true', required=False)
 	parser.add_argument('-s','--score', help='order results by score', action='store_true', required=False)
 	parser.add_argument('-a','--alignment', help='order results by score,\nreturn the optimal alignment calculated for the linking loops', action='store_true', required=False)
+	parser.add_argument('-maxLoop','--maxLoop', help='maximum number of long loops', required=False)
 
 	args = vars(parser.parse_args())
 
