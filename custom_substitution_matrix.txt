@@ -1,4 +1,4 @@
-gap_open=-1
+gap_open=-3
 AA=1
 AC=-2
 AG=-2
