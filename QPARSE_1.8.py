@@ -643,7 +643,8 @@ def check_symmetry(sequence, symmetry, degenerancy, matrix, indls):
 	elif symmetry == 'palindrome':
 		subst_matrix = np.matrix([[-1, -1, -1, 1], [-1, -1, 1, -1], [-1, 1, -1, -1], [1, -1, -1, -1]])
 	elif symmetry == 'mixed':
-		subst_matrix = np.matrix([[1, -1, -1, 1], [-1, 1, 1, -1], [-1, 1, 1, -1], [1, -1, -1, 1]])
+		#subst_matrix = np.matrix([[1, -1, -1, 1], [-1, 1, 1, -1], [-1, 1, 1, -1], [1, -1, -1, 1]])
+		subst_matrix = np.matrix([[1, -2, -2, 2], [-2, 1, 2, -2], [-2, 2, 1, -2], [2, -2, -2, 1]])
 	else:
 		subst_matrix = matrix
 	#end if
@@ -714,6 +715,10 @@ def main(args): # use as args['name']
 	base = args['base'].upper() if args['base'] else 'G'
 	island_num = int(args['islandnum']) if args['islandnum'] else 4
 	base_counter, checked_min_bases = 0, False
+	# Check gap #
+	if max_gaps and not max_gaps_len:
+		sys.exit('\ninput error: only gaps number (-g) have been selected, please select a length for the gaps (-l)\n')
+	#end if
 	# Check Perfect #
 	if args['noperfect']:
 		min_perfect = 0
@@ -740,7 +745,7 @@ def main(args): # use as args['name']
 		elif args['simmetrypalindrome']:
 			symmetry, degenerancy = 'palindrome', 100
 		else:
-			symmetry, degenerancy = 'mixed', 100
+			symmetry, degenerancy, indls = 'mixed', 100, -3
 		#end if
 	else:
 		symmetry, degenerancy = False, 0
@@ -859,10 +864,10 @@ if __name__ == '__main__':
 	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two consecutive bases (e.g. GaGcG)', action='store_true', required=False)
 	parser.add_argument('-noperfect','--noperfect', help='detect also patterns without any perfect island', action='store_true', required=False)
 	parser.add_argument('-fast','--fastermode', 
-						help='faster search mode that can be applied for islandnum > 4\n[only regions with more than --islandnum islands are evaluated\nto build the graph, however, the graph is navigated\nsearching for patterns of four islands to reduce the\ncombinatorial complexity and speed up the analysis]', 
+						help='faster search mode that can be applied for islandnum > 4\n[only regions with at least --islandnum islands are evaluated\nto build the graph, however, the graph is navigated\nsearching for patterns of four islands to reduce the\ncombinatorial complexity and speed up the analysis]', 
 						action='store_true', required=False)
 	parser.add_argument('-normal','--normalmode', 
-						help='searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
+						help='when searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
 						action='store_true', required=False)
 	parser.add_argument('-sM','--simmetrymirror', 
 						help='evaluate the symmetry and length of the loops to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]', 
