@@ -353,7 +353,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-i','--inputfile', help='output file from QPARSE as input', required=True)
 	parser.add_argument('-o','--outputfile', help='file to store formatted output', required=True)
-	parser.add_argument('-g','--gff', help='output to gff format inseatd of tsv', action='store_true', required=False)
+	parser.add_argument('-g','--gff', help='output to gff format instead of tsv', action='store_true', required=False)
 	parser.add_argument('-m','--merge', help='merge overlapping patterns\n(return longest regions of consecutive islands whithin loop distance)', action='store_true', required=False)
 	parser.add_argument('-x','--max', help='return the maximum number of non overlapping patterns', action='store_true', required=False)
 	parser.add_argument('-s','--score', help='order results by score', action='store_true', required=False)
