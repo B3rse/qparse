@@ -870,16 +870,16 @@ if __name__ == '__main__':
 						help='when searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
 						action='store_true', required=False)
 	parser.add_argument('-sM','--simmetrymirror', 
-						help='evaluate the symmetry and length of the loops to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]', 
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]', 
 						action='store_true', required=False)
 	parser.add_argument('-sP','--simmetrypalindrome', 
-						help='evaluate the symmetry and length of the loops to improve the score,\nPALINDROMIC symmetry is considered\n[allows to detect longer loops with palindromic properties that can form canonical-hairpins]', 
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nPALINDROMIC symmetry is considered\n[allows to detect longer loops with palindromic properties that can form canonical-hairpins]', 
 						action='store_true', required=False)
 	parser.add_argument('-sX','--simmetrymixed', 
-						help='evaluate the symmetry and length of the loops to improve the score,\nMIXED MIRROR-PALINDROMIC symmetry is considered\n[allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins]', 
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIXED MIRROR-PALINDROMIC symmetry is considered\n[allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins]', 
 						action='store_true', required=False)
 	parser.add_argument('-sC','--simmetrycustom', 
-						help='evaluate the symmetry and length of the loops to improve the score,\nthe custom substitution-matrix specified is used\n[allows to detect longer loops with symmetrical properties that can form hairpins]', 
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nthe custom substitution-matrix specified is used\n[allows to detect longer loops with symmetrical properties that can form hairpins]', 
 						required=False)
 
 	args = vars(parser.parse_args())
