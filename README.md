@@ -1,16 +1,27 @@
 # *QPARSE* - 
-QPARSE is a Python program (Python v. 2.7) that allows to search for putative patterns associated with the formation of four-stranded non-canonical DNA structure (PQS).
- 
-testo
+
+####Tool
+QPARSE is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structure (quadruplex or PQS) and paired-quadruplex structures [[1](#1), [2](#2)].
+
+The tool also allows to evaluate the symmetrical properties of the longer linking loops (>= 6 bp) to refine the analysis considering for the potential formation of hairpins within the loops that can stabilize the overall structure [[2](#2), [3](#3)].
+
+QPARSE exploits an exhaustive graphs-based algorithm that allows modeling all the possible PQS patterns to consider all the combinations of islands that are detected based on the defined parameters.
+
+####Features: 
+
+  - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and gaps).
+  - The tool can detect longer PQS with more than four consecutive islands that can potentially form paired-quadruplexes that interact into high-order structures.
+  - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered in the search of the PQS. 
+  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpin structures that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal alignment. 
+  - The search is not limited to G or C but can be extended to any other base.
+  - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format. 
 
 ## **Contacts**
 Michele Berselli, <berselli.michele@gmail.com>  
 
 Feel free to contact me for any inquiry, unexpected behaviour or support for your analyses. 
 
-## **QPARSE.py**
-QPARSE_x.x.py 
- 
+## **QPARSE_x.x.py**
 ####Requirements
 QPARSE requires Python (version 2.7) and the numpy library.
 
@@ -34,7 +45,7 @@ To run QPARSE under unix environment (linux, osx):
 	# run QPARSE
 	./QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
 
-	# !! if the above is not working run
+	# !!! if the above is not working run
 	python QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
 
 
@@ -54,10 +65,10 @@ The tool is very flexible and allows the user to select different parameters tha
   -	**-fast**, **--fastermode** (bool): *This parameter triggers a faster search mode that can be applied for islandnum > 4. Only regions with at least* **--islandnum** *islands are evaluated to build the graph, however, the graph is navigated searching for patterns of four islands to reduce the combinatorial complexity and speed up the analysis.*
   
 ######Loop symmetry check:
-  -	**-sM**, **--simmetrymirror** (bool): *Evaluate the symmetry of the long loops (>= 6) to improve the score, MIRROR symmetry is considered. Allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins.*
-  -	**-sP**, **--simmetrypalindrome** (bool): *Evaluate the symmetry of the long loops (>= 6) to improve the score, PALINDROMIC symmetry is considered. Allows to detect longer loops with palindromic properties that can form canonical-hairpins.*
-  -	**-sX**, **--simmetrymixed** (bool): *Evaluate the symmetry of the long loops (>= 6) to improve the score, MIXED MIRROR-PALINDROMIC symmetry is considered. Allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins.*
-  -	**-sC**, **--simmetrycustom** PATH/TO/CUSTOM_MATRIX: *Evaluate the symmetry of the long loops (>= 6) to improve the score, the custom substitution-matrix specified is used. Allows to detect longer loops with symmetrical properties that can form hairpins.*
+  -	**-sM**, **--simmetrymirror** (bool): *Evaluates the symmetry of the long loops (>= 6) to improve the score, MIRROR symmetry is considered. Allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins.*
+  -	**-sP**, **--simmetrypalindrome** (bool): *Evaluates the symmetry of the long loops (>= 6) to improve the score, PALINDROMIC symmetry is considered. Allows to detect longer loops with palindromic properties that can form canonical-hairpins.*
+  -	**-sX**, **--simmetrymixed** (bool): *Evaluates the symmetry of the long loops (>= 6) to improve the score, MIXED MIRROR-PALINDROMIC symmetry is considered. Allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins.*
+  -	**-sC**, **--simmetrycustom** PATH/TO/CUSTOM_MATRIX: *Evaluates the symmetry of the long loops (>= 6) to improve the score, the custom substitution-matrix specified is used to test the alignment (see the template custom_substitution_matrix.txt).*
 
 ######Parameters to be used with caution:
   -	**-all**, **--allresult** (bool): *This parameter allows to show all the possible patterns that are detected, also overlapping and suboptimal [caution!: the output can be huge].*
@@ -120,17 +131,17 @@ The program returns a standard output that is structured in blocks. Each block c
 	GGG-acg-GGG-gccggc-GGG-ccac-GGG 30      3       27      3       NA;WWW;NA
 	GGG-acgg-GGG-ccggc-GGG-ccac-GGG 24      3       27      3       NA;NA;NA
 
-When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 bp and the alignment is not calculated, 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser.py (see below).
+When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 bp and the alignment is not calculated, 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
   
-## **QPARSE_parser.py**
-Together with QPARSE, a python script is also provided that can be used to better organize the raw output.
+## **QPARSE_parser_x.x.py**
+Together with QPARSE, a Python script (Python v. 2.7) is also provided that can be used to better organize the raw output.
 
 ####Command line
 
 	./QPARSE_parser_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [-g] [-m] [-x] [-s] [-a] [-maxLoop MAXLOOP]
 
 ####Parameters
-***note**: defaults are shown in [], bool parameters do not require an argument. Parameters accepting numbers require integers.*
+***note**: bool parameters do not require an argument. Parameters accepting numbers require integers.*
 
 ######General parameters
   - **-i**, **--inputfile** PATH/TO/INPUTFILE: *Output file from QPARSE as input.* 
@@ -186,10 +197,15 @@ Each line contains the sequence ID as in the fasta input, the start and the end 
 
 When showing the alignment, in between each PQS (in tsv format) it is shown the optimal alignment for each of the loops. '|' represent a Watson-Crick pairing, ':' represent a Hoogsteen pairing. 
                 ## **License**
-Copyright (C) 2017 Michele Berselli
+Copyright (C) 2018 Michele Berselli
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 See http://www.gnu.org/licenses/ for more informations.
+
+##**References**
+<a name="1", style="color:grey"></>[1] Characterization of G4–G4 Crosstalk in the c-KIT Promoter Region. Riccardo Rigo and Claudia Sissi. *Biochemistry* 2017.  
+<a name="2", style="color:grey"></>[2] Formation of a Unique End-to-End Stacked Pair of G-Quadruplexes in the hTERT Core Promoter with Implications for Inhibition of Telomerase by G-Quadruplex-Interactive Ligands. SunMi L. Palumbo, Scot W. Ebbinghaus, and Laurence H. Hurley. *Journal of the American Chemical Society* 2009.  
+<a name="3", style="color:grey"></>[3] Major G-Quadruplex Form of HIV-1 LTR Reveals a (3 + 1) Folding Topology Containing a Stem-Loop. Elena Butovskaya, Brahim Heddi, Blaž Bakalar, Sara N. Richter, and Anh Tuân Phan. *Journal of the American Chemical Society* 2018.  
