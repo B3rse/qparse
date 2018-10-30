@@ -49,7 +49,7 @@ def routine_print_tsv(of, seqID, seq, start, end, island_len, score='.'):
 	of.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(seqID, start, end, island_len, score, seq)) #seqID	start	end	island_len	score	quadruplex
 #end def routine_print_tsv
 
-def merge(fi, fo, gff):
+def merge(fi, fo, gff, maxLoop):
 	''' '''
 	if not gff:
 		fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\n')
@@ -62,35 +62,42 @@ def merge(fi, fo, gff):
 					first_ID = False
 				else:
 					if gff and not first:
-						routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i)
+						routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 					elif not first:
-						routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i)
+						routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 					#end if
 				#end if
 				seqID = line.rstrip()[1:]
 				first = True
 			else:
 				line_splitted = line.rstrip().split()
-				g4ID, start, end, island_len = line_splitted[0], int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
-				if first:
+				g4ID, start, end, island_len, score = line_splitted[0], int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4]), int(line_splitted[1])
+				check = True
+				if maxLoop:
+					check = check_maxLoop(g4ID, maxLoop)
+				#end if
+				if first and check:
 					first = False
-					start_i, end_i, seq, island_len_i = start, end, '', island_len
+					start_i, end_i, seq, island_len_i, score_i = start, end, '', island_len, score
 					seq += g4ID.replace('-', '').upper()
-				else:
+				elif check:
 					if start > end_i:
 						if gff:
-							routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i)
+							routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 						else:
-							routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i)
+							routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 						#end if
-						start_i, end_i, seq, island_len_i = start, end, '', island_len
+						start_i, end_i, seq, island_len_i, score_i = start, end, '', island_len, score
 						seq += g4ID.replace('-', '').upper()
 					elif end > end_i:
 						idx = end - end_i
 						end_i = end
 						seq += g4ID.replace('-', '').upper()[-idx:]
-						if island_len < island_len_i:
+						if island_len > island_len_i:
 							island_len_i = island_len
+						#end if
+						if score > score_i:
+							score_i = score
 						#end if
 					#end if
 				#end if
@@ -98,13 +105,13 @@ def merge(fi, fo, gff):
 		#end if
 	#end for
 	if gff and not first:
-		routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i)
+		routine_print_gff(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 	elif not first:
-		routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i)
+		routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 	#end if
 #end def merge
 
-def max_number(fi, fo, gff):
+def max_number(fi, fo, gff, maxLoop):
 	''' '''
 	if not gff:
 		fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\n')
@@ -129,10 +136,14 @@ def max_number(fi, fo, gff):
 			else:
 				line_splitted = line.rstrip().split()
 				g4ID, start, end, island_len, score = line_splitted[0], int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4]), int(line_splitted[1])
-				if first:
+				check = True
+				if maxLoop:
+					check = check_maxLoop(g4ID, maxLoop)
+				#end if
+				if first and check:
 					first = False
 					start_i, end_i, seq_i, island_len_i, score_i, printed = start, end, g4ID, island_len, score, False
-				else:
+				elif check:
 					if start == start_i:
 						if end < end_i:
 							start_i, end_i, seq_i, island_len_i, score_i = start, end, g4ID, island_len, score
@@ -333,9 +344,9 @@ def main(args):
 	if args['alignment'] or args['score']:
 		score(fi, fo, args['alignment'], maxLoop)
 	elif args['merge']:
-		merge(fi, fo, args['gff'])
+		merge(fi, fo, args['gff'], maxLoop)
 	elif args['max']:
-		max_number(fi, fo, args['gff'])
+		max_number(fi, fo, args['gff'], maxLoop)
 	else:
 		normal(fi, fo, args['gff'], maxLoop)
 	#end if
