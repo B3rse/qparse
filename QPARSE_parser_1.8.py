@@ -93,12 +93,12 @@ def merge(fi, fo, gff, maxLoop):
 						idx = end - end_i
 						end_i = end
 						seq += g4ID.replace('-', '').upper()[-idx:]
-						if island_len > island_len_i:
-							island_len_i = island_len
-						#end if
-						if score > score_i:
-							score_i = score
-						#end if
+					#end if
+					if island_len > island_len_i:
+						island_len_i = island_len
+					#end if
+					if score > score_i:
+						score_i = score
 					#end if
 				#end if
 			#end if
