@@ -10,8 +10,8 @@ QPARSE exploits an exhaustive graphs-based algorithm that allows to model all th
 ### Features: 
 
   - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and gaps).
-  - The tool can detect longer PQS with more than four consecutive islands that can potentially form paired-quadruplexes that interact into high-order structures.
-  - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered in the search of the PQS. 
+  - The tool can detect longer PQS with more than four consecutive islands that can potentially form paired-quadruplexes.
+  - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered. 
   - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpin structures that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal alignment. 
   - The search is not limited to G or C but can be extended to any other base.
   - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format. 
@@ -150,9 +150,9 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
   - **-m**, **--merge** (bool): *Using this parameter the overlapping PQS are merged to return the longest regions of consecutive islands whithin the loop distance.* 
   - **-x**, **--max** (bool): *Using this parameter only the maximum number of non overlapping PQS is returned.*
   - **-maxLoop**, **--maxLoop** MAXLOOP: *This parameter allows to define a maximum number of long loops (>= 6 bp) that is permitted in the results. The PQS with a higher number of long loops are filtered out.*
+  - **-s**, **--score** (bool): *This parameter allows to order the PQS by score.*  
 
 ##### Parameters to use when loops symmetries are considered
-  - **-s**, **--score** (bool): *This parameter allows to order the PQS by score.*  
   - **-a**, **--alignment** (bool): *This parameter allows to order the PQS by score, and shows the optimal alignment calculated for the linking loops.*
 
 ### Output

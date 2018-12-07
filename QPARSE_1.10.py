@@ -622,7 +622,12 @@ def check_symmetry(sequence, symmetry, degenerancy, matrix, indls):
 #	indls = -1
 #	max_errors = k * degenerancy // 100
 	max_i, max_j, max_score = 0, 0, 0
-	seq, alignment = sequence.upper(), ''
+	seq, alignment = sequence.upper().replace('U', 'T'), ''
+	#Check Iupac not supported
+	if ('N' in seq or 'R' in seq or 'Y' in seq or 'S' in seq or 'W' in seq or 'K' in seq \
+		or 'D' in seq or 'M' in seq or 'H' in seq or 'B' in seq or 'V' in seq or 'I' in seq):
+		return 0, ''
+	#end if
 	score_matrix = np.zeros(shape=(k + 1, k + 1), dtype=np.int)
 	subst_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 	complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
