@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 ######################################################################################
 #
 ##	QPARSE.py (Quadruplex and Paired quAdRuplex SEarch)
@@ -880,5 +881,4 @@ if __name__ == '__main__':
 	main(args)
 
 # end if
-
 
