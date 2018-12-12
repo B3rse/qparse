@@ -67,7 +67,7 @@ def merge(fi, fo, gff, maxLoop):
 						routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 					#end if
 				#end if
-				seqID = line.rstrip()[1:]
+				seqID = line.rstrip().split()[0][1:]
 				first = True
 			else:
 				line_splitted = line.rstrip().split()
@@ -131,7 +131,7 @@ def max_number(fi, fo, gff, maxLoop):
 						printed = True
 					#end if
 				#end if
-				seqID = line.rstrip()[1:]
+				seqID = line.rstrip().split()[0][1:]
 				first, printed = True, True
 			else:
 				line_splitted = line.rstrip().split()
