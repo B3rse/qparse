@@ -4,9 +4,9 @@
 ######################################################################################
 #
 ##	QPARSE.py (Quadruplex and Paired quAdRuplex SEarch)
-#		QPARSE is a tool developed for the detection of DNA and RNA-quadruplexes forming patterns. 
-#		The tool is flexible and allows to perform an exhaustive search of all the possible 
-#		quadruplexes forming patterns of the desired base in the sequence. 
+#		QPARSE is a tool developed for the detection of DNA and RNA-quadruplexes forming patterns.
+#		The tool is flexible and allows to perform an exhaustive search of all the possible
+#		quadruplexes forming patterns of the desired base in the sequence.
 #		Alternatively, patterns containing any number of islands can be detected.
 #		It can also detect degenerate patterns containing imperfect islands,
 #		and evaluate the symmetrical properties of the linking loops to detect longer loops
@@ -58,7 +58,7 @@ class g_island(graph.node):
 		self.__gaps_num = gaps_num	#number of gaps in the island
 		self.__gaps_len = gaps_len	#total length of gaps in the island
 		self.__score = score
-		self.__perfect = perfect #bool value 
+		self.__perfect = perfect #bool value
 	#end def __init__
 
 	def get_strt_idx(self):
@@ -102,7 +102,7 @@ class g_island(graph.node):
 
 class g_graph(graph):
 	''' '''
-	
+
 	def __init__(self, root):
 		graph.__init__(self, root)	#inheritance from graph
 	#end def __init__
@@ -122,20 +122,55 @@ class g_graph(graph):
 		return counter_perfect_islands
 	#end def __routine_perfect_islands
 
+	def __routine_mismatch(self, quadruplex_as_list_island, min_len, bulge_only_mismatch):
+		''' return if it is a mismatched PQS and the number of mismatched islands '''
+		isl_dict = {} #{min_len: counts, ...}
+		for island in quadruplex_as_list_island:
+			isl_dict.setdefault(island.get_G_num(), 0)
+			isl_dict[island.get_G_num()] += 1
+		#end for
+		len_isl_dict = len(isl_dict)
+		if len_isl_dict == 1:
+			if min_len in isl_dict:
+				return False, 0
+			else:
+				if bulge_only_mismatch:
+					is_perfect = True
+					for island in quadruplex_as_list_island:
+						if island.get_gaps_len() > 0:
+							is_perfect = False
+							break
+						#end if
+					#end for
+					if is_perfect:
+						return True, 0
+					else: 
+						return False, 0
+					#end if
+				else:
+					return True, 0
+			#end if
+		elif len_isl_dict == 2:
+			return True, isl_dict[min(isl_dict)]
+		else:
+			return False, 0
+		#end if
+	#end def __routine_mismatch
+
 	########################################
 	####		DFS print paths         ####
 	########################################
 
-	def get_paths_score(self, node, length, min_perfect=1):
+	def get_paths_score(self, node, length, mismatch, min_len, bulge_only_mismatch, min_perfect=1):
 		''' return all the paths long length
 		starting from the given node with 
 		an associated score '''
 		out, results, current, score = [], [], 0, [0]
-		self.__routine_get_paths_score(node, current, length, out, results, score, min_perfect)
+		self.__routine_get_paths_score(node, current, length, out, results, score, min_perfect, mismatch, min_len, bulge_only_mismatch)
 		return out
 	#end def get_paths_score
 
-	def __routine_get_paths_score(self, node, current, length, out, results, score, min_perfect):
+	def __routine_get_paths_score(self, node, current, length, out, results, score, min_perfect, mismatch, min_len, bulge_only_mismatch):
 		if not node:
 			return
 		else:
@@ -144,14 +179,22 @@ class g_graph(graph):
 			score[0] += node.get_score()
 		#end if
 		if not length == current:
-			[self.__routine_get_paths_score(node_i, current, length, out, results, score, min_perfect) for node_i in node.get_nodi()]
+			[self.__routine_get_paths_score(node_i, current, length, out, results, score, min_perfect, mismatch, min_len, bulge_only_mismatch) for node_i in node.get_nodi()]
 		else:
 			quadruplex_as_list_island = results[:]
+			append_to_out = True
 			if min_perfect:
-				if self.__routine_perfect_islands(quadruplex_as_list_island) >= min_perfect:
-					out.append((quadruplex_as_list_island, score[0]))
+				if self.__routine_perfect_islands(quadruplex_as_list_island) < min_perfect:
+					append_to_out = False
 				#end if
-			else:
+			#end if
+			if mismatch:
+				is_mismatch, mismatch_num = self.__routine_mismatch(quadruplex_as_list_island, min_len, bulge_only_mismatch)
+				if (not is_mismatch) or (mismatch_num > mismatch):
+					append_to_out = False
+				#end if
+			#end if
+			if append_to_out:
 				out.append((quadruplex_as_list_island, score[0]))
 			#end if
 		#end if
@@ -217,7 +260,7 @@ def island_scan(seq, base, min_len, max_gaps_len, max_gaps):
 	return list_island
 #end def island_scan
 
-def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode, normal_mode, symmetry, degenerancy, subst_matrix, indls):
+def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, of, length, all_flag, nocore_flag, min_perfect, faster_mode, normal_mode, symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch):
 	''' '''
 	list_island, end_i, name_i, counter = [], 0, 1, 0
 	for i, base_i in enumerate(seq):
@@ -227,7 +270,7 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 			if list_island_i:
 				if (list_island_i[0].get_strt_idx() - end_i - 1) > max_loop:
 					if counter >= length:
-						graph_island = graph_build_island_length(list_island, max_loop)
+						graph_island = graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismatch)
 						sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
 						sys.stderr.flush()
 						if is_path(graph_island, list_island, length):
@@ -245,9 +288,9 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 								search_min_perfect = min_perfect
 							#end if
 							if not all_flag:
-								print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, search_length, search_min_perfect)
+								print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, min_len, bulge_only_mismatch, search_length, search_min_perfect)
 							else:
-								print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, search_length)
+								print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, search_length)
 							#end if
 						#end if
 					#end if
@@ -264,7 +307,7 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 	#end for
 	# Run analysis on last block of possibly linked islands #
 	if list_island and counter >= length:
-		graph_island = graph_build_island_length(list_island, max_loop)
+		graph_island = graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismatch)
 		sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
 		sys.stderr.flush()
 		if is_path(graph_island, list_island, length):
@@ -282,9 +325,9 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 				search_min_perfect = min_perfect
 			#end if
 			if not all_flag:
-				print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, search_length, search_min_perfect)
+				print_paths_score(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, min_len, bulge_only_mismatch, search_length, search_min_perfect)
 			else:
-				print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, search_length)
+				print_paths(graph_island, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, search_length)
 			#end if
 		#end if
 	#end if
@@ -366,7 +409,7 @@ def graph_build(list_island, max_loop):
 	return link_graph
 #end def graph_build
 
-def graph_build_island_length(list_island, max_loop):
+def graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismatch):
 	''' function to build a graph from the list of islands list_island,
 	a max_loop is used to define which islands can be linked '''
 	link_graph = g_graph(0)
@@ -376,10 +419,43 @@ def graph_build_island_length(list_island, max_loop):
 		while p < len_list_island:
 			island = list_island[p]
 			start = island.get_strt_idx()
-			if (start - end_i - 1) > max_loop:
-				break
-			elif (start > end_i) and (island_i.get_G_num() == island.get_G_num()):
-				link_graph.add_node(island_i, island)
+			# Check mismatch #
+			if mismatch and island_i.get_G_num() - 1 == island.get_G_num():
+				if (start - end_i - 1) > max_loop:
+					break
+				elif (start > end_i):
+					# Check if islands only has one internal mismatch #
+					if bulge_only_mismatch:
+						if island_i.get_gaps_len() == 0:
+							link_graph.add_node(island_i, island)
+						#end if
+					else:
+						if island.get_gaps_len() <= 1:
+							link_graph.add_node(island_i, island)
+						#end if
+					#end if
+				#end if
+			elif mismatch and island_i.get_G_num() + 1 == island.get_G_num():
+				if (start - end_i - 1) > max_loop:
+					break
+				elif (start > end_i):
+					# Check if islands_i only has one internal mismatch #
+					if bulge_only_mismatch:
+						if island.get_gaps_len() == 0:
+							link_graph.add_node(island_i, island)
+						#end if
+					else:
+						if island_i.get_gaps_len() <= 1:
+							link_graph.add_node(island_i, island)
+						#end if
+					#end if
+				#end if
+			else:
+				if (start - end_i - 1) > max_loop:
+					break
+				elif (start > end_i) and (island_i.get_G_num() == island.get_G_num()):
+					link_graph.add_node(island_i, island)
+				#end if
 			#end if
 			p += 1
 		#end while
@@ -388,15 +464,15 @@ def graph_build_island_length(list_island, max_loop):
 #end def graph_build_island_length
 
 #### Paths search ####
-def print_paths(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, length=4):
+def print_paths(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, length=4):
 	''' write all the possible quadruplex long length 
 	recorded in the link_graph to the output file of '''
 	for island in list_island:
 		for quadruplex_as_list_island in link_graph.get_paths(island, length):
 			if symmetry:
-				print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy, subst_matrix, indls)
+				print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch)
 			else:
-				print_quadruplex(quadruplex_as_list_island, seq, of)
+				print_quadruplex(quadruplex_as_list_island, seq, of, mismatch)
 			#end if
 		#end for
 	#end for
@@ -419,7 +495,7 @@ def is_path(link_graph, list_island, length=4):
 	return False
 #end def is_path
 
-def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, length=4, min_perfect=1):
+def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, min_len, bulge_only_mismatch, length=4, min_perfect=1):
 	''' write all the best non contained quadruplex long length for each index 
 	recorded in the link_graph to the output file of '''
 	last_name, last_score, printed, last_end_idx, end_idx_block = '', 0, False, 0, 0
@@ -439,7 +515,7 @@ def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, s
 			continue
 		#end if
 		# Calculate and write quadruplex #
-		lista_quadruplex = sorted(link_graph.get_paths_score(island, length, min_perfect), key=lambda(x,y): y, reverse=True)
+		lista_quadruplex = sorted(link_graph.get_paths_score(island, length, mismatch, min_len, bulge_only_mismatch, min_perfect), key=lambda(x,y): y, reverse=True)
 		try:
 			highest_score, end_idx_block = lista_quadruplex[0][1], 0
 			for quadruplex_as_list_island, score in lista_quadruplex:
@@ -451,9 +527,9 @@ def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, s
 					if (end_idx > last_end_idx) or (score >= last_score):
 #					if (end_idx > last_end_idx) or (score > last_score):
 						if symmetry:
-							print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy, subst_matrix, indls)
+							print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy, subst_matrix, indls, mismatch)
 						else:
-							print_quadruplex_score(quadruplex_as_list_island, seq, of, score)
+							print_quadruplex_score(quadruplex_as_list_island, seq, of, score, mismatch)
 						#end if
 						printed = True
 					#end if
@@ -474,7 +550,7 @@ def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, s
 #end def print_paths_score
 
 #### Printing functions ####
-def print_quadruplex(quadruplex_as_list_island, seq, of):
+def print_quadruplex(quadruplex_as_list_island, seq, of, mismatch):
 	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
 	#Print quadruplex
 	score_total, idx = quadruplex_as_list_island[0].get_score(), quadruplex_as_list_island[0].get_end_idx() + 1
@@ -494,10 +570,14 @@ def print_quadruplex(quadruplex_as_list_island, seq, of):
 	score_total += quadruplex_as_list_island[-1].get_score()
 	#Print other information
 	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
-	of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score_total, start_idx, end_idx, island.get_G_num()))
+	if mismatch:
+		of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score_total, start_idx, end_idx, max([island.get_G_num() for island in quadruplex_as_list_island])))
+	else:
+		of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score_total, start_idx, end_idx, island.get_G_num()))
+	#end if
 #end def print_quadruplex
 
-def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy, subst_matrix, indls):
+def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch):
 	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
 	#Print quadruplex
 	list_alignments = []
@@ -544,10 +624,14 @@ def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, dege
 	score_total += quadruplex_as_list_island[-1].get_score()
 	#Print other information
 	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
-	of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score_total, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+	if mismatch:
+		of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score_total, start_idx, end_idx, max([island.get_G_num() for island in quadruplex_as_list_island]), ';'.join(list_alignments)))
+	else:
+		of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score_total, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+	#end if
 #end def print_quadruplex_symmetry
 
-def print_quadruplex_score(quadruplex_as_list_island, seq, of, score):
+def print_quadruplex_score(quadruplex_as_list_island, seq, of, score, mismatch):
 	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
 	#Print quadruplex
 	idx = quadruplex_as_list_island[0].get_end_idx() + 1
@@ -565,10 +649,14 @@ def print_quadruplex_score(quadruplex_as_list_island, seq, of, score):
 	of.write(quadruplex_as_list_island[-1].get_island(seq)) #writing last island
 	#Print other information
 	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
-	of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score, start_idx, end_idx, island.get_G_num()))
+	if mismatch:
+		of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score, start_idx, end_idx, max([island.get_G_num() for island in quadruplex_as_list_island])))
+	else:
+		of.write('\t{0}\t{1}\t{2}\t{3}\n'.format(score, start_idx, end_idx, island.get_G_num()))
+	#end if
 #end def print_quadruplex_score
 
-def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy, subst_matrix, indls):
+def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, symmetry, degenerancy, subst_matrix, indls, mismatch):
 	''' write a quadruplex on the output file of ''' #quadruplex, start_idx, end_idx, score
 	#Print quadruplex
 	list_alignments = []
@@ -613,7 +701,11 @@ def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, s
 	of.write(quadruplex_as_list_island[-1].get_island(seq)) #writing last island
 	#Print other information
 	start_idx, end_idx = quadruplex_as_list_island[0].get_strt_idx(), quadruplex_as_list_island[-1].get_end_idx()
-	of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+	if mismatch:
+		of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score, start_idx, end_idx, max([island.get_G_num() for island in quadruplex_as_list_island]), ';'.join(list_alignments)))
+	else:
+		of.write('\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(score, start_idx, end_idx, island.get_G_num(), ';'.join(list_alignments)))
+	#end if
 #end def print_quadruplex_score_symmetry
 
 #### Alignment ####
@@ -709,6 +801,8 @@ def main(args): # use as args['name']
 	base = args['base'].upper() if args['base'] else 'G'
 	island_num = int(args['islandnum']) if args['islandnum'] else 4
 	base_counter, checked_min_bases = 0, False
+	nocore = args['nocore']
+	allresult = False
 	# Check gap #
 	if max_gaps and not max_gaps_len:
 		sys.exit('\ninput error: only gaps number (-g) have been selected, please select a length for the gaps (-l)\n')
@@ -744,7 +838,7 @@ def main(args): # use as args['name']
 	else:
 		symmetry, degenerancy = False, 0
 	#end if
-	#Check custom matrix
+	# Check custom matrix #
 	if args['simmetrycustom']:
 		if symmetry:
 			sys.exit('\ninput error: multiple symmetry modes selected, please select only one at the time\n')
@@ -763,6 +857,23 @@ def main(args): # use as args['name']
 			#end for
 			read.close()
 		#end if
+	#end if
+	# Override parameters when mismatch selected #
+	bulge_only_mismatch = False
+	if args['mismatch']:
+		if min_len < 3:
+			sys.exit('\ninput error: mismatched-islands can be only evaluated for a minimum islands length of at least three\n')
+		else:
+			min_len -= 1
+			nocore = True
+			mismatch = int(args['mismatch'])
+			if not max_gaps_len:
+				max_gaps_len = 1
+				bulge_only_mismatch = True
+			#end if
+		#end if
+	else:
+		mismatch = 0
 	#end if
 
 	## Opening output file ##
@@ -790,12 +901,12 @@ def main(args): # use as args['name']
 				if False:
 				#if not checked_min_bases:
 					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
-										args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
-										symmetry, degenerancy, subst_matrix, indls)
+										allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
+										symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 				else:
 					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
-										args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
-										symmetry, degenerancy, subst_matrix, indls)
+										allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
+										symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 				#end if
 
 				# Reset Variables #
@@ -825,12 +936,12 @@ def main(args): # use as args['name']
 	if False:
 	#if not checked_min_bases:
 		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
-							args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
-							symmetry, degenerancy, subst_matrix, indls)
+							allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
+							symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 	else:
 		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
-							args['allresult'], args['nocore'], min_perfect, args['fastermode'], args['normalmode'],
-							symmetry, degenerancy, subst_matrix, indls)
+							allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
+							symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 	#end if
 
 	## Closing output file ##
@@ -854,7 +965,8 @@ if __name__ == '__main__':
 	parser.add_argument('-b','--base', help='base to use for search [G]', required=False)
 	parser.add_argument('-n','--islandnum', help='number of consecutive islands [4]', required=False)
 	parser.add_argument('-p','--perfect', help='minimum number of perfect islands (no-gaps) required [1]', required=False)
-	parser.add_argument('-all','--allresult', help='show all possible patterns, also overlapping and suboptimal\n[caution: the output can be huge]', action='store_true', required=False)
+	parser.add_argument('-x','--mismatch', help='evaluate also islands containing a mismatch,\nset the maximum number of mismatched-islands allowed', required=False)
+#	parser.add_argument('-all','--allresult', help='show all possible patterns, also overlapping and suboptimal\n[caution: the output can be huge]', action='store_true', required=False)
 	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two consecutive bases (e.g. GaGcG)', action='store_true', required=False)
 	parser.add_argument('-noperfect','--noperfect', help='detect also patterns without any perfect island', action='store_true', required=False)
 	parser.add_argument('-fast','--fastermode', 
