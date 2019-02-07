@@ -1,31 +1,31 @@
-# *QPARSE* - 
+# *QPARSE* -
 ---
 
-**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and paired-quadruplex structures [[1](#references), [2](#references)].
+**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and paired or multiple-quadruplex structures (MPQS) [[1](#references), [2](#references)].
 
 The tool can also assess the symmetrical properties of the linking loops to evaluate the potential of the longer loops (>= 6 bp) to form hairpins that stabilize the overall structure [[2](#references), [3](#references)].
 
 QPARSE exploits an exhaustive graphs-based algorithm that allows to model all the possible PQS patterns considering all the combinations of islands that are detected based on the specified parameters.
 
-### Features: 
+### Features:
 
-  - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and gaps).
-  - The tool can detect longer PQS with more than four consecutive islands that can potentially form paired-quadruplexes.
+  - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and *bulges*, and *mismatched* islands).
+  - The tool can detect longer PQS with more than four consecutive islands that can potentially form paired or multiple-quadruplexes.
   - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered. 
-  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpin structures that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal alignment. 
+  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpin structures that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal self-alignment. 
   - The search is not limited to G or C but can be extended to any other base.
   - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format. 
 
 ## **Contacts**
-Michele Berselli, <berselli.michele@gmail.com>  
+Michele Berselli, <berselli.michele@gmail.com>
 
-Feel free to contact me for any inquiry, unexpected behaviour or support for your analyses. 
+Feel free to contact me for any inquiry, unexpected behaviour or support for your analyses.
 
 ## **QPARSE_x.x.py**
 ### Requirements
 QPARSE requires Python (version 2.7) and the numpy library.
 
-To install numpy under unix environment (linux, osx):  
+To install numpy under unix environment (linux, osx):
 
 	sudo pip install numpy
 
@@ -57,13 +57,17 @@ The tool is very flexible and allows the user to select different parameters tha
 
 ***note**: defaults are shown in [], bool parameters do not require an argument. Parameters accepting numbers require integers.*
 
-##### Basic parameters:  - **-i**, **--inputsequence** PATH/TO/INPUTFILE: *Input file with sequence/s as fasta/multi-fasta.*  - **-o**, **--output** PATH/TO/OUTPUTFILE: *Output file to use for writing results.*  - **-b**, **--base** BASE [G]: *Letter that is used to detect the islands. G is used by default but other letters can be selected and used for the analysis instead (case-sensitive, use UPPERCASE).*
-  - **-m**, **--minlen** MINLEN [2]: *This parameter defines the minimum length for the islands. It is also possible to select a range of lengths by adding the parameter* **–M**, **--maxlen** MAXLEN *to detect all the islands that are in the range of length* [m..M]*. While all the possible islands of the different lengths in the range are detected, only islands of the same length can be part of the same PQS.*
+##### Basic parameters:
+  - **-i**, **--inputsequence** PATH/TO/INPUTFILE: *Input file with sequence/s as fasta/multi-fasta.*
+  - **-o**, **--output** PATH/TO/OUTPUTFILE: *Output file to use for writing results.*
+  - **-b**, **--base** BASE [G]: *Letter that is used to detect the islands. G is used by default but other letters can be selected and used for the analysis instead (case-sensitive, use UPPERCASE).*
+  - **-m**, **--minlen** MINLEN [2]: *This parameter defines the minimum length for the islands. It is also possible to select a range of lengths by adding the parameter* **–M**, **--maxlen** MAXLEN *to detect all the islands that are in the range of length* [m..M]*. While all the possible islands of the different lengths in the range are detected, only islands of the same length can be part of the same PQS. To allow for mismatched islands use the parameter* **-x**, **-mismatch** MISMATCH [0] *to set the maximum number of mismatched islands allowed.*
   - **-L**, **--maxloop** MAXLOOP [12]: *This parameter defines the maximum distance (loop distance) that is allowed between two consecutive islands within the same PQS.*
-  - **-g**, **--gapnum** GAPNUM [0]: *This parameter defines the maximum number of gaps that can be opened per island. Alternatively, or in combination, the parameter* **–l**, **--gaplen** GAPLEN [0] *defines the maximum cumulative length of the gaps that is permitted per island. Finally, the parameter* **–nocore** (bool) *defines whether at least two consecutive bases are required to define an island. This Boolean parameter allows to detect also islands that do not have a “core” of at least two consecutive bases (e.g.G, GtGaG).*
-  - **-n**, **--islandnum** ISLANDNUM [4]: *This parameter defines the number of islands that are required to be consecutive in the same PQS.*  - **-p**, **--perfect** (bool) [1]: *This parameter defines the minimum number of islands that are required to be “perfect” within each PQS. Since the tool allows to detect also islands that are degenerate, this parameter imposes a constraint for the minimum number of islands that cannot contain any degeneration within each pattern. If also PQS with no perfect islands are required use the parameter* **-noperfect**, **--noperfect** (bool)*.*
+  - **-g**, **--gapnum** GAPNUM [0]: *This parameter defines the maximum number of gaps that can be opened per island. Alternatively, or in combination, the parameter* **–l**, **--gaplen** GAPLEN [0] *defines the maximum cumulative length of the gaps that is permitted per island. Finally, the parameter* **–nocore** (bool) *defines whether at least two consecutive bases are required to define an island. This Boolean parameter allows to detect also islands that do not have a “core” of at least two consecutive bases (e.g. G, GtGaG).*
+  - **-n**, **--islandnum** ISLANDNUM [4]: *This parameter defines the number of islands that are required to be consecutive in the same PQS.*
+  - **-p**, **--perfect** PERFECT [1]: *This parameter defines the minimum number of islands that are required to be “perfect” within each PQS. Since the tool allows to detect also islands that are degenerate, this parameter imposes a constraint for the minimum number of islands that cannot contain any degeneration within each pattern. If also PQS with no perfect islands are required use the parameter* **-noperfect**, **--noperfect** (bool)*.*
   -	**-fast**, **--fastermode** (bool): *This parameter triggers a faster search mode that can be applied for islandnum > 4. Only regions with at least* **--islandnum** *islands are evaluated to build the graph, however, the graph is navigated searching for patterns of four islands to reduce the combinatorial complexity and speed up the analysis.*
-  
+
 ##### Loop symmetry check:
   -	**-sM**, **--simmetrymirror** (bool): *Evaluates the symmetry of the long loops (>= 6) to improve the score, MIRROR symmetry is considered. Allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins.*
   -	**-sP**, **--simmetrypalindrome** (bool): *Evaluates the symmetry of the long loops (>= 6) to improve the score, PALINDROMIC symmetry is considered. Allows to detect longer loops with palindromic properties that can form canonical-hairpins.*
@@ -71,35 +75,34 @@ The tool is very flexible and allows the user to select different parameters tha
   -	**-sC**, **--simmetrycustom** PATH/TO/CUSTOM_MATRIX: *Evaluates the symmetry of the long loops (>= 6) to improve the score, the custom substitution-matrix specified is used to test the alignment (see the template custom_substitution_matrix.txt).*
 
 ##### Parameters to be used with caution:
-  -	**-all**, **--allresult** (bool): *This parameter allows to show all the possible patterns that are detected, also overlapping and suboptimal [caution!: the output can be huge].*
   -	**-normal**, **--normalmode** (bool): *Searching for more than 12 islands* **--fastermode** *is used by default, this parameter override* **--fastermode** *and the graph is navigated searching for patterns of* **--islandnum** *islands [caution!: the analysis can be computationally expensive].*
 
 
 ### Examples of command lines
-  - Perfect PQS with 4 islands of length 3 bp (-m), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:  
-  
+  - Perfect PQS with 4 islands of length 3 bp (-m), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:
+
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -L 7 [-b C]
 
-  - Perfect PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:  
-  
+  - Perfect PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:
+
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Default search for G, -b C can be added to search for C:  
-  
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Default search for G, -b C can be added to search for C:
+
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2  [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 2 gap (-g) and a maximum gap length of 3 bp (-l). Also islands that do not have a “core” of at least two consecutive bases (-nocore) are detected (e.g. GcGtG). Default search for G, -b C can be added to search for C:  
-  
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 2 gap (-g) and a maximum gap length of 3 bp (-l). Also islands that do not have a “core” of at least two consecutive bases (-nocore) are detected (e.g. GcGtG). Default search for G, -b C can be added to search for C:
+
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 2 -l 3 -nocore [-b C]
 
-  - Degenerate PQS with 8 islands (-n) of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). At least 5 non-degenerate islands (-p) are required. Default search for G, -b C can be added to search for C:  
-  
+  - Degenerate PQS with 8 islands (-n) of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). At least 5 non-degenerate islands (-p) are required. Default search for G, -b C can be added to search for C:
+
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2 -n 8 -p 5 [-b C]
-	
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Long loops (>= 6 bp) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C:  
-  
-		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2 -sX [-b C]
-	
+
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 15 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Long loops (>= 6 bp) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C:
+
+		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 15 -g 1 -l 2 -sX [-b C]
+
 ### Output
 ##### Standard output
 
@@ -132,7 +135,7 @@ The program returns a standard output that is structured in blocks. Each block c
 	GGG-acgg-GGG-ccggc-GGG-ccac-GGG 24      3       27      3       NA;NA;NA
 
 When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 bp and the alignment is not calculated, 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
-  
+
 ## **QPARSE_parser_x.x.py**
 Together with QPARSE, a Python script (Python v. 2.7) is also provided that can be used to better organize the raw output.
 
@@ -146,11 +149,11 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
 ##### General parameters
   - **-i**, **--inputfile** PATH/TO/INPUTFILE: *Output file from QPARSE as input.* 
   - **-o**, **--outputfile** PATH/TO/OUTPUTFILE: *File to store the formatted output.*  
-  - **-g**, **--gff** (bool): *By default the output of the parser is in tsv (TAB separated) format, this parameter converts the output to gff format.*  
-  - **-m**, **--merge** (bool): *Using this parameter the overlapping PQS are merged to return the longest regions of consecutive islands whithin the loop distance.* 
+  - **-g**, **--gff** (bool): *By default the output of the parser is in tsv (TAB separated) format, this parameter converts the output to gff format.*
+  - **-m**, **--merge** (bool): *Using this parameter the overlapping PQS are merged to return the longest regions of consecutive islands whithin the loop distance.*
   - **-x**, **--max** (bool): *Using this parameter only the maximum number of non overlapping PQS is returned.*
   - **-maxLoop**, **--maxLoop** MAXLOOP: *This parameter allows to define a maximum number of long loops (>= 6 bp) that is permitted in the results. The PQS with a higher number of long loops are filtered out.*
-  - **-s**, **--score** (bool): *This parameter allows to order the PQS by score.*  
+  - **-s**, **--score** (bool): *This parameter allows to order the PQS by score.*
 
 ##### Parameters to use when loops symmetries are considered
   - **-a**, **--alignment** (bool): *This parameter allows to order the PQS by score, and shows the optimal alignment calculated for the linking loops.*
@@ -209,4 +212,4 @@ See http://www.gnu.org/licenses/ for more informations.
 **[2]** Formation of a Unique End-to-End Stacked Pair of G-Quadruplexes in the hTERT Core Promoter with Implications for Inhibition of Telomerase by G-Quadruplex-Interactive Ligands. SunMi L. Palumbo, Scot W. Ebbinghaus, and Laurence H. Hurley. *Journal of the American Chemical Society* 2009.  
 **[3]** Major G-Quadruplex Form of HIV-1 LTR Reveals a (3 + 1) Folding Topology Containing a Stem-Loop. Elena Butovskaya, Brahim Heddi, Blaž Bakalar, Sara N. Richter, and Anh Tuân Phan. *Journal of the American Chemical Society* 2018.
 
- 
+
