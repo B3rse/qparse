@@ -863,6 +863,8 @@ def main(args): # use as args['name']
 	if args['mismatch']:
 		if min_len < 3:
 			sys.exit('\ninput error: mismatched-islands can be only evaluated for a minimum islands length of at least three\n')
+		elif int(args['mismatch']) > (island_num - 1):
+			sys.exit('\ninput error: number of mismatched-islands allowed is higher than the number of islands required\n')
 		else:
 			min_len -= 1
 			nocore = True
@@ -965,7 +967,7 @@ if __name__ == '__main__':
 	parser.add_argument('-b','--base', help='base to use for search [G]', required=False)
 	parser.add_argument('-n','--islandnum', help='number of consecutive islands [4]', required=False)
 	parser.add_argument('-p','--perfect', help='minimum number of perfect islands (no-gaps) required [1]', required=False)
-	parser.add_argument('-x','--mismatch', help='evaluate also islands containing a mismatch,\nset the maximum number of mismatched-islands allowed', required=False)
+	parser.add_argument('-x','--mismatch', help='evaluate also islands containing a mismatch,\nset the maximum number of mismatched-islands allowed [0]', required=False)
 #	parser.add_argument('-all','--allresult', help='show all possible patterns, also overlapping and suboptimal\n[caution: the output can be huge]', action='store_true', required=False)
 	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two consecutive bases (e.g. GaGcG)', action='store_true', required=False)
 	parser.add_argument('-noperfect','--noperfect', help='detect also patterns without any perfect island', action='store_true', required=False)
