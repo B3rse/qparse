@@ -46,7 +46,7 @@ To run QPARSE under unix environment (linux, osx):
 	./QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
 
 	# !!! if the above is not working run
-	python QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
+	python2.7 QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
 
 
 ### Input
@@ -197,8 +197,9 @@ Each line contains the sequence ID as in the fasta input, the start and the end 
                   
                 --
 
-When showing the alignment, in between each PQS (in tsv format) it is shown the optimal alignment for each of the loops. '|' represent a Watson-Crick pairing, ':' represent a Hoogsteen pairing. 
-                ## **License**
+When showing the alignment, in between each PQS (in tsv format) it is shown the optimal alignment for each of the loops. '|' represent a Watson-Crick pairing, ':' represent a Hoogsteen pairing.
+
+## **License**
 Copyright (C) 2018 Michele Berselli
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
