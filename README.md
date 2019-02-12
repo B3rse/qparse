@@ -79,27 +79,27 @@ The tool is very flexible and allows the user to select different parameters tha
 
 
 ### Examples of command lines
-  - Perfect PQS with 4 islands of length 3 bp (-m), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:
+  - Perfect PQS with 4 islands of length 3 bp (-m), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -L 7 [-b C]
 
-  - Perfect PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C:
+  - Perfect PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Default search for G, -b C can be added to search for C:
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2  [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 2 gap (-g) and a maximum gap length of 3 bp (-l). Also islands that do not have a “core” of at least two consecutive bases (-nocore) are detected (e.g. GcGtG). Default search for G, -b C can be added to search for C:
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 2 gap (-g) and a maximum gap length of 3 bp (-l). Also islands that do not have a “core” of at least two consecutive bases (-nocore) are detected (e.g. GcGtG). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 2 -l 3 -nocore [-b C]
 
-  - Degenerate PQS with 8 islands (-n) of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). At least 5 non-degenerate islands (-p) are required. Default search for G, -b C can be added to search for C:
+  - Degenerate PQS with 8 islands (-n) of length in range [3..4] bp (-m, -M), maximum loop distance of 7 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). At least 5 non-degenerate islands (-p) are required. Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2 -n 8 -p 5 [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 15 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Long loops (>= 6 bp) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C:
+  - Degenerate PQS with 4 islands of length in range [3..4] bp (-m, -M), maximum loop distance of 15 bp (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 bp (-l). Long loops (>= 6 bp) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 15 -g 1 -l 2 -sX [-b C]
 
@@ -134,7 +134,7 @@ The program returns a standard output that is structured in blocks. Each block c
 	GGG-acg-GGG-gccggc-GGG-ccac-GGG 30      3       27      3       NA;WWW;NA
 	GGG-acgg-GGG-ccggc-GGG-ccac-GGG 24      3       27      3       NA;NA;NA
 
-When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 bp and the alignment is not calculated, 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
+When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 bp and the alignment is not calculated 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
 
 ## **QPARSE_parser_x.x.py**
 Together with QPARSE, a Python script (Python v. 2.7) is also provided that can be used to better organize the raw output.
@@ -146,7 +146,7 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
 ### Parameters
 ***note**: bool parameters do not require an argument. Parameters accepting numbers require integers.*
 
-##### General parameters
+##### General parameters:
   - **-i**, **--inputfile** PATH/TO/INPUTFILE: *Output file from QPARSE as input.* 
   - **-o**, **--outputfile** PATH/TO/OUTPUTFILE: *File to store the formatted output.*  
   - **-g**, **--gff** (bool): *By default the output of the parser is in tsv (TAB separated) format, this parameter converts the output to gff format.*
@@ -155,7 +155,7 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
   - **-maxLoop**, **--maxLoop** MAXLOOP: *This parameter allows to define a maximum number of long loops (>= 6 bp) that is permitted in the results. The PQS with a higher number of long loops are filtered out.*
   - **-s**, **--score** (bool): *This parameter allows to order the PQS by score.*
 
-##### Parameters to use when loops symmetries are considered
+##### Parameters to use when loops symmetries are considered:
   - **-a**, **--alignment** (bool): *This parameter allows to order the PQS by score, and shows the optimal alignment calculated for the linking loops.*
 
 ### Output
