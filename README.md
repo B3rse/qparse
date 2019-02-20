@@ -1,5 +1,4 @@
-# *QPARSE* - searching for long-looped or multimeric G-quadruplexes potentially distinctive and druggable
----
+# QPARSE
 
 **QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and multimeric quadruplex structures (MPQS) [[1](#references), [2](#references)].
 
@@ -20,6 +19,8 @@ QPARSE exploits an exhaustive graphs-based algorithm that allows to model all th
 Michele Berselli, <berselli.michele@gmail.com>
 
 Feel free to contact me for any inquiry, unexpected behaviour or support for your analyses.
+
+A web-server is available at <http://www.medcomp.medicina.unipd.it/qparse/tool>
 
 ## **QPARSE_x.x.py**
 ### Requirements
