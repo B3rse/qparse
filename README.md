@@ -1,17 +1,17 @@
 # QPARSE
 
-**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplexes or PQSs) and multimeric quadruplex structures (MPQSs) [[1](#references), [2](#references)].
+**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and multimeric quadruplex structures (MPQS) [[1](#references), [2](#references)].
 
-The tool can also assess the symmetrical properties of the linking loops to evaluate the potential of longer loops (>= 6 bp) to form hairpins that stabilize the quadruplex structure [[2](#references), [3](#references)].
+The tool can also assess the symmetrical properties of the linking loops to evaluate the potential of longer loops (>= 6 bp) to form stem-loop structures that stabilize the quadruplex [[2](#references), [3](#references)].
 
 QPARSE exploits an exhaustive graphs-based algorithm that allows to model all the possible PQS patterns considering all the combinations of islands that are detected based on the specified parameters.
 
 ### Features:
 
-  - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and *bulges*, and *mismatched* islands).
+  - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and bulges, and mismatched islands).
   - The tool can detect longer PQS with more than four consecutive islands that can potentially form multimeric quadruplexes.
   - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered. 
-  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpin structures that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal self-alignment. 
+  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpins that stabilize longer loops (>= 6 bp). It is also possible to use a custom matrix for the calculation of the optimal self-alignment. 
   - The search is not limited to G or C but can be extended to any other base.
   - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format. 
 
