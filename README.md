@@ -1,8 +1,8 @@
 # QPARSE
 
-**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and multimeric quadruplex structures (MPQS) [[1](#references), [2](#references)].
+**QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplexes or PQSs) and multimeric quadruplex structures (MPQSs) [[1](#references), [2](#references)].
 
-The tool can also assess the symmetrical properties of the linking loops to evaluate the potential of the longer loops (>= 6 bp) to form hairpins that stabilize the overall structure [[2](#references), [3](#references)].
+The tool can also assess the symmetrical properties of the linking loops to evaluate the potential of longer loops (>= 6 bp) to form hairpins that stabilize the quadruplex structure [[2](#references), [3](#references)].
 
 QPARSE exploits an exhaustive graphs-based algorithm that allows to model all the possible PQS patterns considering all the combinations of islands that are detected based on the specified parameters.
 
