@@ -17,7 +17,7 @@
 #		berselli.michele@gmail.com
 #
 ##	LICENSE:
-#		Copyright (C) 2018 Michele Berselli
+#		Copyright (C) 2019 Michele Berselli
 #
 #		This program is free software: you can redistribute it and/or modify
 #		it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ class g_graph(graph):
 					#end for
 					if is_perfect:
 						return True, 0
-					else: 
+					else:
 						return False, 0
 					#end if
 				else:
@@ -163,7 +163,7 @@ class g_graph(graph):
 
 	def get_paths_score(self, node, length, mismatch, min_len, bulge_only_mismatch, min_perfect=1):
 		''' return all the paths long length
-		starting from the given node with 
+		starting from the given node with
 		an associated score '''
 		out, results, current, score = [], [], 0, [0]
 		self.__routine_get_paths_score(node, current, length, out, results, score, min_perfect, mismatch, min_len, bulge_only_mismatch)
@@ -209,15 +209,15 @@ class g_graph(graph):
 ########################################
 
 def is_island(seq, base, strt_idx, min_len, max_gaps_len=0, max_gaps=0):
-	''' function to identify base island of lenght min_len, 
+	''' function to identify base island of lenght min_len,
 	return bool value and information on the island '''
 	if max_gaps_len and not max_gaps:
 		max_gaps = min_len #maximum number of gaps possible
-	#end if 
+	#end if
 	base_num, gaps_num, gaps_len, score = 1, 0, 0, 6
 	last_base, increment, idx = base, 1, 1
 	while (gaps_num <= max_gaps) and (gaps_len <= max_gaps_len):
-		try: 
+		try:
 			next_base = seq[strt_idx + idx]
 			if base == next_base:
 				base_num += 1
@@ -235,7 +235,7 @@ def is_island(seq, base, strt_idx, min_len, max_gaps_len=0, max_gaps=0):
 			#end if
 			last_base = next_base
 			idx += 1
-		except:
+		except Exception:
 			return (0, 0, 0, 0, 0, 0)
 		#end try
 	#end while
@@ -244,7 +244,7 @@ def is_island(seq, base, strt_idx, min_len, max_gaps_len=0, max_gaps=0):
 
 #### Island Scan ####
 def island_scan(seq, base, min_len, max_gaps_len, max_gaps):
-	''' function to scan a sequence seq searching 
+	''' function to scan a sequence seq searching
 	for all the islands of length min_len, save into a list '''
 	list_island = []
 	name_i = 1
@@ -271,8 +271,10 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 				if (list_island_i[0].get_strt_idx() - end_i - 1) > max_loop:
 					if counter >= length:
 						graph_island = graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismatch)
-						sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
-						sys.stderr.flush()
+						if verbose:
+							sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
+							sys.stderr.flush()
+						#end if
 						if is_path(graph_island, list_island, length):
 							if (faster_mode or length > 12) and not (normal_mode):
 								search_length = 4
@@ -308,8 +310,10 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 	# Run analysis on last block of possibly linked islands #
 	if list_island and counter >= length:
 		graph_island = graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismatch)
-		sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
-		sys.stderr.flush()
+		if verbose:
+			sys.stderr.write('\tBuilt Graph up to {0}\n'.format(end_i))
+			sys.stderr.flush()
+		#end if
 		if is_path(graph_island, list_island, length):
 			if (faster_mode or length > 12) and not (normal_mode):
 				search_length = 4
@@ -334,15 +338,15 @@ def island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, m
 #end def island_scan_range_run
 
 def routine_island_scan_range(seq, base, strt_idx, min_len, max_len, name_i, max_gaps_len=0, max_gaps=0, nocore_flag=False):
-	''' function to identify base islands in range of length, 
+	''' function to identify base islands in range of length,
 	return a list of island objects identified '''
 	if max_gaps_len and not max_gaps:
 		max_gaps = max_len #maximum number of gaps possible
-	#end if 
+	#end if
 	out, base_num, gaps_num, gaps_len, score, island_len, core, perfect = [], 1, 0, 0, 6, min_len, False, True
 	last_base, increment, idx = base, 1, 1
 	while (gaps_num <= max_gaps) and (gaps_len <= max_gaps_len):
-		try: 
+		try:
 			next_base = seq[strt_idx + idx]
 			if base == next_base:
 				base_num += 1
@@ -380,7 +384,7 @@ def routine_island_scan_range(seq, base, strt_idx, min_len, max_len, name_i, max
 			#end if
 			last_base = next_base
 			idx += 1
-		except:
+		except Exception:
 			return out
 		#end try
 	#end while
@@ -465,7 +469,7 @@ def graph_build_island_length(list_island, max_loop, mismatch, bulge_only_mismat
 
 #### Paths search ####
 def print_paths(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, length=4):
-	''' write all the possible quadruplex long length 
+	''' write all the possible quadruplex long length
 	recorded in the link_graph to the output file of '''
 	for island in list_island:
 		for quadruplex_as_list_island in link_graph.get_paths(island, length):
@@ -482,28 +486,36 @@ def is_path(link_graph, list_island, length=4):
 	''' check if there is a path long length in the graph '''
 	list_island_len = len(list_island)
 	for i, island in enumerate(list_island):
-		sys.stderr.write('\r\t-> Check longest path [{:.0f}%]'.format(float(i)/list_island_len*100))
-		sys.stderr.flush()
-		if link_graph.path_check(island, length):
-			sys.stderr.write('\r\t-> Check longest path [{0}%] - [OK]\n'.format(100))
+		if verbose:
+			sys.stderr.write('\r\t-> Check longest path [{:.0f}%]'.format(float(i)/list_island_len*100))
 			sys.stderr.flush()
+		#end if
+		if link_graph.path_check(island, length):
+			if verbose:
+				sys.stderr.write('\r\t-> Check longest path [{0}%] - [OK]\n'.format(100))
+				sys.stderr.flush()
+			#end if
 			return True
 		#end if
 	#end for
-	sys.stderr.write('\r\t-> Check longest path [{0}%] - [NOT FOUND]\n'.format(100))
-	sys.stderr.flush()
+	if verbose:
+		sys.stderr.write('\r\t-> Check longest path [{0}%] - [NOT FOUND]\n'.format(100))
+		sys.stderr.flush()
+	#end if
 	return False
 #end def is_path
 
 def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, subst_matrix, indls, mismatch, min_len, bulge_only_mismatch, length=4, min_perfect=1):
-	''' write all the best non contained quadruplex long length for each index 
+	''' write all the best non contained quadruplex long length for each index
 	recorded in the link_graph to the output file of '''
 	last_name, last_score, printed, last_end_idx, end_idx_block = '', 0, False, 0, 0
 	list_island_len = len(list_island)
 	#print [(island.get_island(seq), island.get_strt_idx()) for island in list_island]
 	for i, island in enumerate(list_island):
-		sys.stderr.write('\r\t-> Graph Navigation [{:.0f}%]'.format(float(i)/list_island_len*100))
-		sys.stderr.flush()
+		if verbose:
+			sys.stderr.write('\r\t-> Graph Navigation [{:.0f}%]'.format(float(i)/list_island_len*100))
+			sys.stderr.flush()
+		#end if
 		current_name = island.get_name()
 		# Check islands block per index #
 		if last_name != current_name: #new block start
@@ -541,12 +553,14 @@ def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, s
 				last_end_idx = end_idx_block
 				last_score = highest_score
 			#end if
-		except:
+		except Exception:
 			continue
 		#end try
 	#end for
-	sys.stderr.write('\r\t-> Graph Navigation [{0}%]\n'.format(100))
-	sys.stderr.flush()
+	if verbose:
+		sys.stderr.write('\r\t-> Graph Navigation [{0}%]\n'.format(100))
+		sys.stderr.flush()
+	#end if
 #end def print_paths_score
 
 #### Printing functions ####
@@ -782,8 +796,32 @@ def check_symmetry(sequence, symmetry, degenerancy, matrix, indls):
 			j -= 1
 		#end if
 	#end while
-	return max_score, alignment
+	penalty, edited_alignment = edit_alignment(seq, alignment, subst_matrix, subst_idx, indls)
+	return max_score + penalty, edited_alignment
 #end def check_symmetry
+
+def edit_alignment(seq, alignment, subst_matrix, subst_idx, indls):
+	''' '''
+	penalty, edited_alignment, k, l = 0, '', len(alignment), alignment.count('l')
+	if alignment[0] == 'l': l -= 1
+	for i in range(2):
+		if alignment[i] == 'l' or alignment[i] == 'u':
+			penalty -= indls
+			edited_alignment += alignment[i]
+		elif alignment[i] == 'W':
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			edited_alignment += 'm'
+		elif alignment[i] == 'H':
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			edited_alignment += 'm'
+		else:
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			edited_alignment += alignment[i]
+		#end if
+	#end for
+	if k > 2: edited_alignment += alignment[2:]
+	return penalty, edited_alignment
+#end def edit_alignment
 
 
 ########################################
@@ -902,11 +940,11 @@ def main(args): # use as args['name']
 				# Analyzing the sequence #
 				if False:
 				#if not checked_min_bases:
-					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+					island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num,
 										allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
 										symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 				else:
-					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+					island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num,
 										allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
 										symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 				#end if
@@ -937,11 +975,11 @@ def main(args): # use as args['name']
 
 	if False:
 	#if not checked_min_bases:
-		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+		island_scan_range_run(seq, base, 2, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num,
 							allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
 							symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 	else:
-		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num, 
+		island_scan_range_run(seq, base, min_len, max_len, max_gaps_len, max_gaps, max_loop, fo, island_num,
 							allresult, nocore, min_perfect, args['fastermode'], args['normalmode'],
 							symmetry, degenerancy, subst_matrix, indls, mismatch, bulge_only_mismatch)
 	#end if
@@ -954,7 +992,7 @@ def main(args): # use as args['name']
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser(description='Welcome to QPARSE.\nCopyright(C) 2018 Michele Berselli\nberselli.michele@gmail.com', 
+	parser = argparse.ArgumentParser(description='Welcome to QPARSE.\nCopyright(C) 2019 Michele Berselli\nberselli.michele@gmail.com',
 									formatter_class=argparse.RawTextHelpFormatter)
 
 	parser.add_argument('-i','--inputsequence', help='input sequence as fasta/multifasta', required=True)
@@ -971,28 +1009,32 @@ if __name__ == '__main__':
 #	parser.add_argument('-all','--allresult', help='show all possible patterns, also overlapping and suboptimal\n[caution: the output can be huge]', action='store_true', required=False)
 	parser.add_argument('-nocore','--nocore', help='detect also islands without at least two consecutive bases (e.g. GaGcG)', action='store_true', required=False)
 	parser.add_argument('-noperfect','--noperfect', help='detect also patterns without any perfect island', action='store_true', required=False)
-	parser.add_argument('-fast','--fastermode', 
-						help='faster search mode that can be applied for islandnum > 4\n[only regions with at least --islandnum islands are evaluated\nto build the graph, however, the graph is navigated\nsearching for patterns of four islands to reduce the\ncombinatorial complexity and speed up the analysis]', 
+	parser.add_argument('-fast','--fastermode',
+						help='faster search mode that can be applied for islandnum > 4\n[only regions with at least --islandnum islands are evaluated\nto build the graph, however, the graph is navigated\nsearching for patterns of four islands to reduce the\ncombinatorial complexity and speed up the analysis]',
 						action='store_true', required=False)
-	parser.add_argument('-normal','--normalmode', 
-						help='when searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]', 
+	parser.add_argument('-normal','--normalmode',
+						help='when searching for more than 12 islands --fastermode is used by default,\nthis flag override --fastermode and the graph is navigated\nsearching for patterns of --islandnum islands\n[caution: the analysis can be computationally expensive]',
 						action='store_true', required=False)
-	parser.add_argument('-sM','--simmetrymirror', 
-						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]', 
+	parser.add_argument('-sM','--simmetrymirror',
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIRROR symmetry is considered\n[allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins]',
 						action='store_true', required=False)
-	parser.add_argument('-sP','--simmetrypalindrome', 
-						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nPALINDROMIC symmetry is considered\n[allows to detect longer loops with palindromic properties that can form canonical-hairpins]', 
+	parser.add_argument('-sP','--simmetrypalindrome',
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nPALINDROMIC symmetry is considered\n[allows to detect longer loops with palindromic properties that can form canonical-hairpins]',
 						action='store_true', required=False)
-	parser.add_argument('-sX','--simmetrymixed', 
-						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIXED MIRROR-PALINDROMIC symmetry is considered\n[allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins]', 
+	parser.add_argument('-sX','--simmetrymixed',
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nMIXED MIRROR-PALINDROMIC symmetry is considered\n[allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins]',
 						action='store_true', required=False)
-	parser.add_argument('-sC','--simmetrycustom', 
-						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nthe custom substitution-matrix specified is used\n[allows to detect longer loops with symmetrical properties that can form hairpins]', 
+	parser.add_argument('-sC','--simmetrycustom',
+						help='evaluate the symmetry of the long loops (>= 6 bp) to improve the score,\nthe custom substitution-matrix specified is used\n[allows to detect longer loops with symmetrical properties that can form hairpins]',
 						required=False)
+	parser.add_argument('-v','--verbose',
+						help='activate verbose mode to show graph building status',
+						action='store_true', required=False)
 
 	args = vars(parser.parse_args())
+
+	verbose = args['verbose']
 
 	main(args)
 
 # end if
-
