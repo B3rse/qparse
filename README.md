@@ -10,10 +10,10 @@ QPARSE exploits an exhaustive graphs-based algorithm that allows to model all th
 
   - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and bulges, and mismatched islands).
   - The tool can detect longer PQS with more than four consecutive islands that can potentially form multimeric quadruplexes.
-  - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered. 
-  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpins that stabilize longer loops (>= 6 nt). It is also possible to use a custom matrix for the calculation of the optimal self-alignment. 
+  - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered.
+  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpins that stabilize longer loops (>= 6 nt). It is also possible to use a custom matrix for the calculation of the optimal self-alignment.
   - The search is not limited to G or C but can be extended to any other base.
-  - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format. 
+  - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format.
 
 ## **Contacts**
 Michele Berselli, <berselli.michele@gmail.com>
@@ -30,7 +30,7 @@ To install numpy under unix environment (linux, osx):
 
 	sudo pip install numpy
 
-To get help with numpy installation check 
+To get help with numpy installation check
 [numpy docs](https://docs.scipy.org/doc/ "numpy documentation")
 
 ### Running QPARSE
@@ -39,10 +39,10 @@ To run QPARSE under unix environment (linux, osx):
 
 	# move to QPARSE folder
 	cd PATH/TO/QPARSE/FOLDER/
-	
+
 	# make QPARSE executable
 	sudo chmod +x QPARSE_x.x.py
-	
+
 	# run QPARSE
 	./QPARSE_x.x.py -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE [OPTIONS]
 
@@ -159,6 +159,14 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
 #### Parameters to use when loops symmetries are considered:
   - **-a**, **--alignment** (bool): this parameter allows to order the PQS by score, and shows the optimal alignment calculated for the linking loops.
 
+#### Parameters to use with CAUTION (require mfold 3.6):
+The software has been tested and is compatible with mfold version 3.6. Please refer to [mfold website](http://unafold.rna.albany.edu/?q=mfold "mfold resources") for resources and credits. mfold should be accessible from the command line (known to your PATH environment variable).
+
+***WARNING**: mfold is computationally expensive, it is strongly recommended to use this utility only for a small number of sequences.*
+
+  - **-mfold_s**, **--mfold_score** [DNA|RNA]: this parameter allows to order the PQS by score, in addition returns the energies calculated for the linking loops (>= 6 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
+  - **-mfold_a**, **--mfold_alignment** [DNA|RNA]: this parameter allows to order the PQS by score, and shows the more stable conformation and the energies calculated for the linking loops (>= 6 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
+
 ### Output
 #### Standard tsv (TAB separated) output
 
@@ -195,13 +203,13 @@ Each line contains the sequence ID as in the fasta input, the start and the end 
                 -tcc
         Loop_3:
                 --
-                  
+
                 --
 
 When showing the alignment, in between each PQS (in tsv format) it is shown the optimal alignment for each of the loops. '|' represent a Watson-Crick pairing, ':' represent a Hoogsteen pairing.
 
 ## **License**
-Copyright (C) 2018 Michele Berselli
+Copyright (C) 2019 Michele Berselli
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
 
@@ -210,8 +218,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 See http://www.gnu.org/licenses/ for more informations.
 
 ## **References**
-**[1]** Characterization of G4–G4 Crosstalk in the c-KIT Promoter Region. Riccardo Rigo and Claudia Sissi. *Biochemistry* 2017.  
-**[2]** Formation of a Unique End-to-End Stacked Pair of G-Quadruplexes in the hTERT Core Promoter with Implications for Inhibition of Telomerase by G-Quadruplex-Interactive Ligands. SunMi L. Palumbo, Scot W. Ebbinghaus, and Laurence H. Hurley. *Journal of the American Chemical Society* 2009.  
+**[1]** Characterization of G4–G4 Crosstalk in the c-KIT Promoter Region. Riccardo Rigo and Claudia Sissi. *Biochemistry* 2017.
+**[2]** Formation of a Unique End-to-End Stacked Pair of G-Quadruplexes in the hTERT Core Promoter with Implications for Inhibition of Telomerase by G-Quadruplex-Interactive Ligands. SunMi L. Palumbo, Scot W. Ebbinghaus, and Laurence H. Hurley. *Journal of the American Chemical Society* 2009.
 **[3]** Major G-Quadruplex Form of HIV-1 LTR Reveals a (3 + 1) Folding Topology Containing a Stem-Loop. Elena Butovskaya, Brahim Heddi, Blaž Bakalar, Sara N. Richter, and Anh Tuân Phan. *Journal of the American Chemical Society* 2018.
-
-
