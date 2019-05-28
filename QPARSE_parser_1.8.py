@@ -8,7 +8,7 @@
 #		berselli.michele@gmail.com
 #
 ##	LICENSE:
-#		Copyright (C) 2018 Michele Berselli
+#		Copyright (C) 2019 Michele Berselli
 #
 #		This program is free software: you can redistribute it and/or modify
 #		it under the terms of the GNU General Public License as published by
@@ -26,14 +26,15 @@
 
 
 # Import libraries
-import sys, argparse
+import sys, argparse, os
+import subprocess
 
 
 # Functions definition
 def routine_print_gff(of, seqID, seq, start, end, island_len, score='.'):
 	''' '''
 	of.write('{0}\tQPARSE\t{1}\t{2}\t{3}\t{4}\t{5}\t.\tID={6};island={7}\n'.format(
-																			seqID,
+																			seqID.split(),
 																			'quadruplex',
 																			start + 1,
 																			end + 1,
@@ -48,6 +49,13 @@ def routine_print_tsv(of, seqID, seq, start, end, island_len, score='.'):
 	''' '''
 	of.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(seqID, start, end, island_len, score, seq)) #seqID	start	end	island_len	score	quadruplex
 #end def routine_print_tsv
+
+def routine_print_tsv_energy(of, seqID, seq, start, end, island_len, score='.', energies=['']):
+	''' '''
+	of.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t'.format(seqID, start, end, island_len, score, seq)) #seqID	start	end	island_len	score	quadruplex
+	of.write('|'.join(energies))
+	of.write('\n')
+#end def routine_print_tsv_energy
 
 def merge(fi, fo, gff, maxLoop):
 	''' '''
@@ -67,7 +75,7 @@ def merge(fi, fo, gff, maxLoop):
 						routine_print_tsv(fo, seqID, seq, start_i, end_i, island_len_i, score_i)
 					#end if
 				#end if
-				seqID = line.rstrip().split()[0][1:]
+				seqID = line.rstrip()[1:]
 				first = True
 			else:
 				line_splitted = line.rstrip().split()
@@ -131,7 +139,7 @@ def max_number(fi, fo, gff, maxLoop):
 						printed = True
 					#end if
 				#end if
-				seqID = line.rstrip().split()[0][1:]
+				seqID = line.rstrip()[1:]
 				first, printed = True, True
 			else:
 				line_splitted = line.rstrip().split()
@@ -181,7 +189,7 @@ def normal(fi, fo, gff, maxLoop):
 	for line in fi:
 		if not line.startswith('#'):
 			if line.startswith('>'):
-				seqID = line.rstrip().split()[0][1:]
+				seqID = line.rstrip()[1:]
 			else:
 				line_splitted = line.rstrip().split()
 				seq, score, start, end, island_len = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
@@ -208,7 +216,7 @@ def score(fi, fo, alignment, maxLoop):
 		if not line.startswith('#'):
 			if line.startswith('>'):
 				c += 1
-				seqID = line.rstrip().split()[0][1:]
+				seqID = line.rstrip()[1:]
 			else:
 				line_splitted = line.rstrip().split()
 				printa = True
@@ -260,6 +268,94 @@ def score(fi, fo, alignment, maxLoop):
 		#end for
 	#end if
 #end def score
+
+def score_mfold(fi, fo, alignment, maxLoop, molecule):
+	''' '''
+	fo.write('#seqID\tstart\tend\tisland_len\tscore\tquadruplex\tenergies(kcal/mol)\n')
+	dict_quadruplex = {}
+	c = 0
+	for line in fi:
+		if not line.startswith('#'):
+			if line.startswith('>'):
+				c += 1
+				seqID = line.rstrip()[1:]
+			else:
+				line_splitted = line.rstrip().split()
+				printa = True
+				seq, score, start, end, island_len = line_splitted[0], int(line_splitted[1]), int(line_splitted[2]), int(line_splitted[3]), int(line_splitted[4])
+				if maxLoop:
+					printa = check_maxLoop(seq, maxLoop)
+				#end if
+				if printa:
+					dict_quadruplex.setdefault((seqID, c), {})
+					dict_quadruplex[(seqID, c)].setdefault((seq, start), [score, end, island_len])
+				#end if
+			#end if
+		#end if
+	#end for
+
+	for (seqID, c), dict_seqID in sorted(dict_quadruplex.iteritems(), key=lambda (x, y): x[1]):
+		for (seq, start), (score, end, island_len) in sorted(dict_seqID.iteritems(), key=lambda (x, y): y[0], reverse = True):
+			lista_loop = seq.split('-') #[_, loop1, _, loop2, _, ...]
+			energies, plot = [], {}
+			for i, loop in enumerate(lista_loop[1::2]):
+				plot.setdefault(i, [])
+				if len(loop) > 5:
+					# Saving loop as fasta
+					with open('tmp_seq.fas', 'w') as tmp_seq_write:
+						tmp_seq_write.write('>tmp_seq\n')
+						tmp_seq_write.write(loop)
+					#end with
+					# Run mfold
+					try:
+						subprocess.call("mfold SEQ='tmp_seq.fas' NA={0} MAX=1".format(molecule), shell=True)
+					except Exception:
+						sys.exit('runtime error: something is wrong with your mfold')
+					#end try
+					# Read mfold.out
+					with open('tmp_seq.fas.out', 'r') as tmp_seq_read:
+						first, start_plot = True, False
+						for line in tmp_seq_read:
+							line_rstrip = line.rstrip()
+							if line_rstrip.startswith('Structure'):
+								if first:
+									first = False
+								else:
+									break
+								#end if
+							elif 'dG' in line_rstrip:
+								energy, start_plot = line_rstrip.split('=')[1].split()[0], True
+								energies.append(energy)
+							elif alignment and line_rstrip and start_plot:
+								plot[i].append(line_rstrip + '\n')
+							#end if
+						#end for
+					#end with
+				else:
+					energies.append('NA')
+				#end if
+			#end for
+			routine_print_tsv_energy(fo, seqID, seq, start, end, island_len, score, energies)
+			if alignment:
+				for i in range(len(energies)):
+					fo.write('\tLoop_{0}:\n\t\t'.format(i + 1))
+					if plot[i]:
+						fo.write('\t\t'.join(plot[i]))
+					else:
+						fo.write('--\n\n')
+						fo.write('\t\t--\n')
+					#end if
+				#end for
+			#end if
+		#end for
+	#end for
+	#Cleaning
+	for f in os.listdir('.'):
+		if f.startswith('tmp_seq'):
+			os.remove(f)
+		#end if
+	#end for
+#end def score_mfold
 
 def routine_print_align(of, seq, align):
 
@@ -333,7 +429,7 @@ def main(args):
 			sys.exit('\ninput error: alignment mode is incompatible with other parsing modes, please select only one\n')
 		#end if
 	#end if
-	
+
 	if args['maxLoop']:
 		maxLoop = int(args['maxLoop'])
 	else:
@@ -347,6 +443,27 @@ def main(args):
 		merge(fi, fo, args['gff'], maxLoop)
 	elif args['max']:
 		max_number(fi, fo, args['gff'], maxLoop)
+	elif args['mfold_score'] or args['mfold_alignment']:
+		molecule = 'DNA'
+		if args['mfold_alignment']:
+			if args['mfold_alignment'] == 'DNA':
+				pass
+			elif args['mfold_alignment'] == 'RNA':
+				molecule = 'RNA'
+			else:
+				sys.exit('\ninput error: molecule selected for mfold analysis is not valid, please select DNA or RNA\n')
+			#end if
+			score_mfold(fi, fo, True, maxLoop, molecule)
+		else:
+			if args['mfold_score'] == 'DNA':
+				pass
+			elif args['mfold_score'] == 'RNA':
+				molecule = 'RNA'
+			else:
+				sys.exit('\ninput error: molecule selected for mfold analysis is not valid, please select DNA or RNA\n')
+			#end if
+			score_mfold(fi, fo, False, maxLoop, molecule)
+		#end if
 	else:
 		normal(fi, fo, args['gff'], maxLoop)
 	#end if
@@ -359,7 +476,7 @@ def main(args):
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser(description='Script to format the output from QPARSE', 
+	parser = argparse.ArgumentParser(description='Script to format the output from QPARSE',
 									formatter_class=argparse.RawTextHelpFormatter)
 
 	parser.add_argument('-i','--inputfile', help='output file from QPARSE as input', required=True)
@@ -369,10 +486,11 @@ if __name__ == '__main__':
 	parser.add_argument('-x','--max', help='return the maximum number of non overlapping patterns', action='store_true', required=False)
 	parser.add_argument('-s','--score', help='order results by score', action='store_true', required=False)
 	parser.add_argument('-a','--alignment', help='order results by score,\nreturn the optimal alignment calculated for the linking loops', action='store_true', required=False)
+	parser.add_argument('-mfold_s','--mfold_score', help='order results by score,\nreturn the energy calculated for the linking loops using mfold\nspecify DNA or RNA as parameter depending on your molecules', required=False)
+	parser.add_argument('-mfold_a','--mfold_alignment', help='order results by score,\nreturn the more stable conformation and the energy calculated for the linking loops using mfold\nspecify DNA or RNA as parameter depending on your molecules', required=False)
 	parser.add_argument('-maxLoop','--maxLoop', help='maximum number of long loops (>= 6 bp)', required=False)
 
 	args = vars(parser.parse_args())
 
 	main(args)
 #end if
-
