@@ -803,19 +803,21 @@ def check_symmetry(sequence, symmetry, degenerancy, matrix, indls):
 def edit_alignment(seq, alignment, subst_matrix, subst_idx, indls):
 	''' '''
 	penalty, edited_alignment, k, l = 0, '', len(alignment), alignment.count('l')
+	j = l
 	if alignment[0] == 'l': l -= 1
+	if alignment[0] == 'u': j += 1
 	for i in range(2):
 		if alignment[i] == 'l' or alignment[i] == 'u':
 			penalty -= indls
 			edited_alignment += alignment[i]
 		elif alignment[i] == 'W':
-			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - j + i]]]
 			edited_alignment += 'm'
 		elif alignment[i] == 'H':
-			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - j + i]]]
 			edited_alignment += 'm'
 		else:
-			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - l + i]]]
+			penalty -= subst_matrix[subst_idx[seq[k - l - i - 1]], subst_idx[seq[k - j + i]]]
 			edited_alignment += alignment[i]
 		#end if
 	#end for
