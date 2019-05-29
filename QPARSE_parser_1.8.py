@@ -308,9 +308,9 @@ def score_mfold(fi, fo, alignment, maxLoop, molecule):
 					#end with
 					# Run mfold
 					try:
-						subprocess.call("mfold SEQ='tmp_seq.fas' NA={0} MAX=1".format(molecule), shell=True)
+						subprocess.check_call("mfold SEQ='tmp_seq.fas' NA={0} MAX=1".format(molecule), shell=True)
 					except Exception:
-						sys.exit('runtime error: something is wrong with your mfold')
+						sys.exit('runtime error: something is wrong with your mfold, check mfold is installed and visible in your env PATH')
 					#end try
 					# Read mfold.out
 					with open('tmp_seq.fas.out', 'r') as tmp_seq_read:
