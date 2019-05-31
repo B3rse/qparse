@@ -508,7 +508,7 @@ if __name__ == '__main__':
 	parser.add_argument('-a','--alignment', help='order results by score,\nreturn the optimal alignment calculated for the linking loops', action='store_true', required=False)
 	parser.add_argument('-mfold_s','--mfold_score', help='order results by score,\nreturn the energy calculated for the linking loops using mfold\nspecify DNA or RNA as parameter depending on your molecules', required=False)
 	parser.add_argument('-mfold_a','--mfold_alignment', help='order results by score,\nreturn the more stable conformation and the energy calculated for the linking loops using mfold\nspecify DNA or RNA as parameter depending on your molecules', required=False)
-	parser.add_argument('-maxLoop','--maxLoop', help='maximum number of long loops (>= 6 bp)', required=False)
+	parser.add_argument('-maxLoop','--maxLoop', help='maximum number of long loops (>= 7 bp)', required=False)
 
 	args = vars(parser.parse_args())
 
