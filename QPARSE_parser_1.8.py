@@ -34,7 +34,7 @@ import subprocess
 def routine_print_gff(of, seqID, seq, start, end, island_len, score='.'):
 	''' '''
 	of.write('{0}\tQPARSE\t{1}\t{2}\t{3}\t{4}\t{5}\t.\tID={6};island={7}\n'.format(
-																			seqID.split(),
+																			seqID.split()[0],
 																			'quadruplex',
 																			start + 1,
 																			end + 1,
@@ -310,7 +310,7 @@ def score_mfold(fi, fo, alignment, maxLoop, molecule):
 					try:
 						subprocess.check_call("mfold SEQ='tmp_seq.fas' NA={0} MAX=1".format(molecule), shell=True)
 					except Exception:
-						sys.exit('runtime error: something is wrong with your mfold, check mfold is installed and visible in your env PATH')
+						sys.exit('\nruntime error: something is wrong with your mfold, check mfold is installed and visible in your env PATH\n')
 					#end try
 					# Read mfold.out
 					with open('tmp_seq.fas.out', 'r') as tmp_seq_read:
@@ -438,12 +438,18 @@ def main(args):
 
 	## Parser
 	if args['alignment'] or args['score']:
+		if args['gff']:
+			sys.exit('\ninput error: gff conversion is not available when ordering by score\n')
+		#end if
 		score(fi, fo, args['alignment'], maxLoop)
 	elif args['merge']:
 		merge(fi, fo, args['gff'], maxLoop)
 	elif args['max']:
 		max_number(fi, fo, args['gff'], maxLoop)
 	elif args['mfold_score'] or args['mfold_alignment']:
+		if args['gff']:
+			sys.exit('\ninput error: gff conversion is not available while using mfold\n')
+		#end if
 		molecule = 'DNA'
 		if args['mfold_alignment']:
 			if args['mfold_alignment'] == 'DNA':
