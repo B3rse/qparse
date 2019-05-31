@@ -440,17 +440,29 @@ def main(args):
 	if args['alignment'] or args['score']:
 		if args['gff']:
 			sys.exit('\ninput error: gff conversion is not available when ordering by score\n')
+		elif args['mfold_alignment'] or args['mfold_score']:
+			sys.exit('\ninput error: please select only one method to evaluate loop structure\n')
+		elif args['merge']:
+			sys.exit('\ninput error: -s/-a is incompatible with -m, please select only one method\n')
+		elif args['max']:
+			sys.exit('\ninput error: -s/-a is incompatible with -x, please select only one method\n')
 		#end if
 		score(fi, fo, args['alignment'], maxLoop)
 	elif args['merge']:
+		if args['max']:
+			sys.exit('\ninput error: -m is incompatible with -x, please select only one method\n')
+		elif args['mfold_alignment'] or args['mfold_score']:
+			sys.exit('\ninput error: mfold analysis is not available with -m\n')
+		#end if
 		merge(fi, fo, args['gff'], maxLoop)
 	elif args['max']:
+		if args['mfold_alignment'] or args['mfold_score']:
+			sys.exit('\ninput error: mfold analysis is not available with -x\n')
+		#end if
 		max_number(fi, fo, args['gff'], maxLoop)
 	elif args['mfold_score'] or args['mfold_alignment']:
 		if args['gff']:
 			sys.exit('\ninput error: gff conversion is not available while using mfold\n')
-		elif args['score'] or args['alignment']:
-			sys.exit('\ninput error: please select only one method to evaluate loop structure\n')
 		#end if
 		molecule = 'DNA'
 		if args['mfold_alignment']:
