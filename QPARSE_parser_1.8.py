@@ -449,6 +449,8 @@ def main(args):
 	elif args['mfold_score'] or args['mfold_alignment']:
 		if args['gff']:
 			sys.exit('\ninput error: gff conversion is not available while using mfold\n')
+		elif args['score'] or args['alignment']:
+			sys.exit('\ninput error: please select only one method to evaluate loop structure\n')
 		#end if
 		molecule = 'DNA'
 		if args['mfold_alignment']:
