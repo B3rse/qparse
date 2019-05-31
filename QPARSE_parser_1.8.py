@@ -300,7 +300,7 @@ def score_mfold(fi, fo, alignment, maxLoop, molecule):
 			energies, plot = [], {}
 			for i, loop in enumerate(lista_loop[1::2]):
 				plot.setdefault(i, [])
-				if len(loop) > 5:
+				if len(loop) > 6:
 					# Saving loop as fasta
 					with open('tmp_seq.fas', 'w') as tmp_seq_write:
 						tmp_seq_write.write('>tmp_seq\n')
