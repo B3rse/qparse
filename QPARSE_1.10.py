@@ -602,10 +602,10 @@ def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, dege
 		sequence = seq[idx:island.get_strt_idx()].lower()
 		of.write(sequence)
 		#Check symmetry and adding score
-		if len(sequence) > 5:
+		if len(sequence) > 6:
 			max_score, alignment = check_symmetry(sequence, symmetry, degenerancy, subst_matrix, indls)
 		else:
-			max_score, alignment = 6 - len(sequence), ''
+			max_score, alignment = 7 - len(sequence), ''
 		#end if
 		score_total += max_score
 		if alignment:
@@ -622,10 +622,10 @@ def print_quadruplex_symmetry(quadruplex_as_list_island, seq, of, symmetry, dege
 	sequence = seq[idx:quadruplex_as_list_island[-1].get_strt_idx()].lower()
 	of.write(sequence)
 	#Check symmetry and adding score
-	if len(sequence) > 5:
+	if len(sequence) > 6:
 		max_score, alignment = check_symmetry(sequence, symmetry, degenerancy, subst_matrix, indls)
 	else:
-		max_score, alignment = 6 - len(sequence), ''
+		max_score, alignment = 7 - len(sequence), ''
 	#end if
 	score_total += max_score
 	if alignment:
@@ -681,10 +681,10 @@ def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, s
 		sequence = seq[idx:island.get_strt_idx()].lower()
 		of.write(sequence)
 		#Check symmetry and adding score
-		if len(sequence) > 5:
+		if len(sequence) > 6:
 			max_score, alignment = check_symmetry(sequence, symmetry, degenerancy, subst_matrix, indls)
 		else:
-			max_score, alignment = 6 - len(sequence), ''
+			max_score, alignment = 7 - len(sequence), ''
 		#end if
 		score += max_score
 		if alignment:
@@ -700,10 +700,10 @@ def print_quadruplex_score_symmetry(quadruplex_as_list_island, seq, of, score, s
 	sequence = seq[idx:quadruplex_as_list_island[-1].get_strt_idx()].lower()
 	of.write(sequence)
 	#Check symmetry and adding score
-	if len(sequence) > 5:
+	if len(sequence) > 6:
 		max_score, alignment = check_symmetry(sequence, symmetry, degenerancy, subst_matrix, indls)
 	else:
-		max_score, alignment = 6 - len(sequence), ''
+		max_score, alignment = 7 - len(sequence), ''
 	#end if
 	score += max_score
 	if alignment:

@@ -406,7 +406,7 @@ def check_maxLoop(seq, maxLoop):
 	Loop_counter = 0
 	for i, s_i in enumerate(lista_loop):
 		if (i % 2) == 1:
-			if len(s_i) > 5:
+			if len(s_i) > 6:
 				Loop_counter += 1
 			#end if
 			if Loop_counter > maxLoop:
