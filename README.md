@@ -105,6 +105,8 @@ The tool is very flexible and allows the user to select different parameters tha
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 15 -g 1 -l 2 -sX [-b C]
 
 ### Output
+The program returns at each position the highest scoring and more promising results.
+
 #### Standard output
 
 	#quadruplex     score   start   end     island_len
