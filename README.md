@@ -2,7 +2,7 @@
 
 **QPARSE** is a Python program (Python v. 2.7) that allows to search for *exact* or *degenerate* putative patterns associated with the formation of four-stranded non-canonical nucleic-acids structures (quadruplex or PQS) and multimeric quadruplex structures [[1](#references), [2](#references)].
 
-The tool can assess the symmetrical properties of the linking loops to evaluate the potential of longer loops (>= 6 nt) to form stem-loop structures that stabilize the quadruplex [[2](#references), [3](#references)].
+The tool can assess the symmetrical properties of the linking loops to evaluate the potential of longer loops (>= 7 nt) to form stem-loop structures that stabilize the quadruplex [[2](#references), [3](#references)].
 
 QPARSE exploits an exhaustive graphs-based algorithm that allows to model all the possible patterns considering all the combinations of islands that are detected based on the specified parameters.
 
@@ -11,7 +11,7 @@ QPARSE exploits an exhaustive graphs-based algorithm that allows to model all th
   - The tool can detect both *exact* or *degenerate* islands (i.e. islands containing any desired combination of bases and bulges, and mismatched islands).
   - The tool can detect longer PQS with more than four consecutive islands that can potentially form multimeric quadruplexes.
   - The tool is exhaustive in the search and all the possible combinations of the detected islands are considered.
-  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpins that stabilize longer loops (>= 6 nt). It is also possible to use a custom matrix for the calculation of the optimal self-alignment.
+  - The tool can assess the symmetrical properties (mirror, palindromic or a combination of both) of the linking loops to evaluate the potential formation of hairpins that stabilize longer loops (>= 7 nt). It is also possible to use a custom matrix for the calculation of the optimal self-alignment.
   - The search is not limited to G or C but can be extended to any other base.
   - A parser is provided to refine the raw output and convert it into a tsv or gff format. The parser also allows the visualization of the symmetrical properties of the loops in a blast-like format.
 
@@ -70,10 +70,10 @@ The tool is very flexible and allows the user to select different parameters tha
   -	**-fast**, **--fastermode** (bool): this parameter triggers a faster search mode that can be applied for islandnum > 4. Only regions with at least **--islandnum** islands are evaluated to build the graph, however, the graph is navigated searching for patterns of four islands to reduce the combinatorial complexity and speed up the analysis.
 
 #### Loop symmetry check:
-  -	**-sM**, **--simmetrymirror** (bool): evaluates the symmetry of the long loops (>= 6 nt) to improve the score, MIRROR symmetry is considered. Allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins.
-  -	**-sP**, **--simmetrypalindrome** (bool): evaluates the symmetry of the long loops (>= 6 nt) to improve the score, PALINDROMIC symmetry is considered. Allows to detect longer loops with palindromic properties that can form canonical-hairpins.
-  -	**-sX**, **--simmetrymixed** (bool): evaluates the symmetry of the long loops (>= 6 nt) to improve the score, MIXED MIRROR-PALINDROMIC symmetry is considered. Allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins.
-  -	**-sC**, **--simmetrycustom** PATH/TO/CUSTOM_MATRIX: evaluates the symmetry of the long loops (>= 6 nt) to improve the score, the custom substitution-matrix specified is used to test the alignment (see the template custom_substitution_matrix.txt).
+  -	**-sM**, **--simmetrymirror** (bool): evaluates the symmetry of the long loops (>= 7 nt) to improve the score, MIRROR symmetry is considered. Allows to detect longer loops with mirror properties that can form Hoogsteen-hairpins.
+  -	**-sP**, **--simmetrypalindrome** (bool): evaluates the symmetry of the long loops (>= 7 nt) to improve the score, PALINDROMIC symmetry is considered. Allows to detect longer loops with palindromic properties that can form canonical-hairpins.
+  -	**-sX**, **--simmetrymixed** (bool): evaluates the symmetry of the long loops (>= 7 nt) to improve the score, MIXED MIRROR-PALINDROMIC symmetry is considered. Allows to detect longer loops with mirror and palindromic properties that can form mixed-hairpins.
+  -	**-sC**, **--simmetrycustom** PATH/TO/CUSTOM_MATRIX: evaluates the symmetry of the long loops (>= 7 nt) to improve the score, the custom substitution-matrix specified is used to test the alignment (see the template custom_substitution_matrix.txt).
 
 #### Parameters to be used with caution:
   -	**-normal**, **--normalmode** (bool): searching for more than 12 islands **--fastermode** is used by default, this parameter override **--fastermode** and the graph is navigated searching for patterns of **--islandnum** islands *[caution!: the analysis can be computationally expensive]*.
@@ -100,7 +100,7 @@ The tool is very flexible and allows the user to select different parameters tha
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 7 -g 1 -l 2 -n 8 -p 5 [-b C]
 
-  - Degenerate PQS with 4 islands of length in range [3..4] (-m, -M), maximum loop distance of 15 nt (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 nt (-l). Long loops (>= 6 nt) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C instead:
+  - Degenerate PQS with 4 islands of length in range [3..4] (-m, -M), maximum loop distance of 15 nt (-L). Islands can have a maximum of 1 gap (-g) and a maximum gap length of 2 nt (-l). Long loops (>= 7 nt) are analyzed for mixed mirror-palindromic symmetrical properties (-sX). Default search for G, -b C can be added to search for C instead:
 
 		./QPARSE_x.x -i PATH/INPUT/FILE -o PATH/OUTPUT/FILE -m 3 -M 4 -L 15 -g 1 -l 2 -sX [-b C]
 
@@ -137,7 +137,7 @@ The program returns a standard output that is structured in blocks. Each block c
 	GGG-acg-GGG-gccggc-GGG-ccac-GGG 30      3       27      3       NA;WWW;NA
 	GGG-acgg-GGG-ccggc-GGG-ccac-GGG 24      3       27      3       NA;NA;NA
 
-When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 6 nt and the alignment is not calculated 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
+When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 7 nt and the alignment is not calculated 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
 
 ## **QPARSE_parser_x.x.py**
 Together with QPARSE, a Python script (Python v. 2.7) is also provided that can be used to better organize the raw output.
@@ -155,7 +155,7 @@ Together with QPARSE, a Python script (Python v. 2.7) is also provided that can 
   - **-g**, **--gff** (bool): by default the output of the parser is in tsv (TAB separated) format, this parameter converts the output to gff format.
   - **-m**, **--merge** (bool): using this parameter the overlapping PQS are merged to return the longest regions of consecutive islands whithin the loop distance.
   - **-x**, **--max** (bool): using this parameter only the maximum number of non overlapping PQS is returned.
-  - **-maxLoop**, **--maxLoop** MAXLOOP: this parameter allows to define a maximum number of long loops (>= 6 nt) that is permitted in the results. The PQS with a higher number of long loops are filtered out.
+  - **-maxLoop**, **--maxLoop** MAXLOOP: this parameter allows to define a maximum number of long loops (>= 7 nt) that is permitted in the results. The PQS with a higher number of long loops are filtered out.
   - **-s**, **--score** (bool): this parameter allows to order the PQS by score.
 
 #### Parameters to use when loops symmetries are considered:
@@ -166,8 +166,8 @@ The software has been tested and is compatible with mfold version 3.6. Please re
 
 ***WARNING**: mfold is computationally expensive, it is strongly recommended to use this utility only for a small number of sequences.*
 
-  - **-mfold_s**, **--mfold_score** [DNA|RNA]: this parameter allows to order the PQS by score, in addition returns the energies calculated for the linking loops (>= 6 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
-  - **-mfold_a**, **--mfold_alignment** [DNA|RNA]: this parameter allows to order the PQS by score, and shows the more stable conformation and the energies calculated for the linking loops (>= 6 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
+  - **-mfold_s**, **--mfold_score** [DNA|RNA]: this parameter allows to order the PQS by score, in addition returns the energies calculated for the linking loops (>= 7 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
+  - **-mfold_a**, **--mfold_alignment** [DNA|RNA]: this parameter allows to order the PQS by score, and shows the more stable conformation and the energies calculated for the linking loops (>= 7 nt) using mfold. Specify DNA or RNA as parameter depending on your molecules.
 
 ### Output
 #### Standard tsv (TAB separated) output
