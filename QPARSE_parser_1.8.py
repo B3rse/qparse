@@ -443,9 +443,9 @@ def main(args):
 		elif args['mfold_alignment'] or args['mfold_score']:
 			sys.exit('\ninput error: please select only one method to evaluate loop structure\n')
 		elif args['merge']:
-			sys.exit('\ninput error: -s/-a is incompatible with -m, please select only one method\n')
+			sys.exit('\ninput error: -s is incompatible with -m, please select only one method\n')
 		elif args['max']:
-			sys.exit('\ninput error: -s/-a is incompatible with -x, please select only one method\n')
+			sys.exit('\ninput error: -s is incompatible with -x, please select only one method\n')
 		#end if
 		score(fi, fo, args['alignment'], maxLoop)
 	elif args['merge']:
