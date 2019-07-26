@@ -22,6 +22,8 @@ Feel free to contact me for any inquiry, unexpected behaviour or support for you
 
 A web-server is available at <http://www.medcomp.medicina.unipd.it/qparse/tool>
 
+Publication: *Michele Berselli, Enrico Lavezzo, Stefano Toppo, QPARSE: searching for long-looped or multimeric G-quadruplexes potentially distinctive and druggable, Bioinformatics, , btz569, https://doi-org.ezp-prod1.hul.harvard.edu/10.1093/bioinformatics/btz569*
+
 ## **QPARSE_x.x.py**
 ### Requirements
 QPARSE requires Python (version 2.7) and the numpy library.
