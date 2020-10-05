@@ -26,7 +26,7 @@ A web-server is available at <http://www.medcomp.medicina.unipd.it/qparse/tool>
 
 ## **QPARSE_x.x.py**
 ### Requirements
-QPARSE requires Python (version 2.7) and the numpy library.
+QPARSE requires Python (version 3) and the numpy library.
 
 To install numpy under unix environment (linux, osx):
 
