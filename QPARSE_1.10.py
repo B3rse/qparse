@@ -527,7 +527,7 @@ def print_paths_score(link_graph, list_island, seq, of, symmetry, degenerancy, s
 			continue
 		#end if
 		# Calculate and write quadruplex #
-		lista_quadruplex = sorted(link_graph.get_paths_score(island, length, mismatch, min_len, bulge_only_mismatch, min_perfect), key=lambda(x,y): y, reverse=True)
+		lista_quadruplex = sorted(link_graph.get_paths_score(island, length, mismatch, min_len, bulge_only_mismatch, min_perfect), key=lambda x_y: x_y[1], reverse=True)
 		try:
 			highest_score, end_idx_block = lista_quadruplex[0][1], 0
 			for quadruplex_as_list_island, score in lista_quadruplex:
