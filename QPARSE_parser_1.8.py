@@ -252,7 +252,7 @@ def score(fi, fo, alignment, maxLoop):
 			#end for
 		#end for
 	else:
-		for (seqID, c), dict_seqID in sorted(dict_quadruplex_aln.iteritems(), key=lambda (x, y): x[1]):
+		for (seqID, c), dict_seqID in sorted(dict_quadruplex_aln.iteritems(), key=lambda x_y: x_y[0][1]):
 			for (seq, start), (score, end, island_len, aln) in sorted(dict_seqID.iteritems(), key=lambda x_y: x_y[1][0], reverse = True):
 				routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
 				lista_aln = aln.split(';')

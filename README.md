@@ -30,7 +30,7 @@ QPARSE requires Python (version 3) and the numpy library.
 
 To install numpy under unix environment (linux, osx):
 
-	sudo pip install numpy
+	pip install numpy
 
 To get help with numpy installation check
 [numpy docs](https://docs.scipy.org/doc/ "numpy documentation")
