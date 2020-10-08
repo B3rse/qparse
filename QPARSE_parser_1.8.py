@@ -246,14 +246,14 @@ def score(fi, fo, alignment, maxLoop):
 	#end for
 
 	if dict_quadruplex:
-		for (seqID, c), dict_seqID in sorted(dict_quadruplex.iteritems(), key=lambda x_y: x_y[0][1]):
-			for (seq, start), (score, end, island_len) in sorted(dict_seqID.iteritems(), key=lambda x_y: x_y[1][0], reverse = True):
+		for (seqID, c), dict_seqID in sorted(dict_quadruplex.items(), key=lambda x_y: x_y[0][1]):
+			for (seq, start), (score, end, island_len) in sorted(dict_seqID.items(), key=lambda x_y: x_y[1][0], reverse = True):
 				routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
 			#end for
 		#end for
 	else:
-		for (seqID, c), dict_seqID in sorted(dict_quadruplex_aln.iteritems(), key=lambda x_y: x_y[0][1]):
-			for (seq, start), (score, end, island_len, aln) in sorted(dict_seqID.iteritems(), key=lambda x_y: x_y[1][0], reverse = True):
+		for (seqID, c), dict_seqID in sorted(dict_quadruplex_aln.items(), key=lambda x_y: x_y[0][1]):
+			for (seq, start), (score, end, island_len, aln) in sorted(dict_seqID.items(), key=lambda x_y: x_y[1][0], reverse = True):
 				routine_print_tsv(fo, seqID, seq, start, end, island_len, score)
 				lista_aln = aln.split(';')
 				lista_loop = seq.split('-') #[_, loop1, _, loop2, _, ...]
@@ -294,8 +294,8 @@ def score_mfold(fi, fo, alignment, maxLoop, molecule):
 		#end if
 	#end for
 
-	for (seqID, c), dict_seqID in sorted(dict_quadruplex.iteritems(), key=lambda x_y: x_y[0][1]):
-		for (seq, start), (score, end, island_len) in sorted(dict_seqID.iteritems(), key=lambda x_y: x_y[1][0], reverse = True):
+	for (seqID, c), dict_seqID in sorted(dict_quadruplex.items(), key=lambda x_y: x_y[0][1]):
+		for (seq, start), (score, end, island_len) in sorted(dict_seqID.items(), key=lambda x_y: x_y[1][0], reverse = True):
 			lista_loop = seq.split('-') #[_, loop1, _, loop2, _, ...]
 			energies, plot = [], {}
 			for i, loop in enumerate(lista_loop[1::2]):

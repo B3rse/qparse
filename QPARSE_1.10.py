@@ -834,7 +834,7 @@ def main(args): # use as args['name']
 
 	## Variables ##
 	min_len = int(args['minlen']) if args['minlen'] else 2
-	max_len = int(args['maxlen']) if (args['maxlen']) and (args['maxlen'] > min_len) else min_len
+	max_len = int(args['maxlen']) if (args['maxlen']) and (int(args['maxlen']) > min_len) else min_len
 	max_loop = int(args['maxloop']) if args['maxloop'] else 12
 	max_gaps = int(args['gapnum']) if args['gapnum'] else 0
 	max_gaps_len = int(args['gaplen']) if args['gaplen'] else 0

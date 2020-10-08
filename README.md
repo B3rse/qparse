@@ -142,7 +142,7 @@ The program returns a standard output that is structured in blocks. Each block c
 When the symmetry of the loops is considered, for each PQS an additional field is reported in the output. This field contains the information of the self-alignment for each of the loops. The self-alignment encodings for each loop are separated by ';'. In the encodings, 'W' identifies a Watson-Crick pairing, 'H' a Hoogsteen pairing, 'l-u' a gap opening and 'm' a mismatch. If the loop is shorter than 7 nt and the alignment is not calculated 'NA' is reported instead. This field is used to show the optimal alignment when using QPARSE_parser_x.x.py (see below).
 
 ## **QPARSE_parser_x.x.py**
-Together with QPARSE, a Python script (Python v. 2.7) is also provided that can be used to better organize the raw output.
+Together with QPARSE, a Python script (Python v. 3) is also provided that can be used to better organize the raw output.
 
 ### Command line
 
